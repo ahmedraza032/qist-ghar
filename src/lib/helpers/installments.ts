@@ -54,3 +54,36 @@ export function getAllInstallmentOptions(
     calculateInstallment(basePrice, d, undefined, customDownPayment)
   );
 }
+
+export type DerivedInstallmentStatus = "pending" | "partial" | "paid" | "overdue";
+
+function startOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+export function deriveInstallmentStatus(
+  status: string,
+  dueDate: string,
+  paidTotal: number,
+  amount: number
+): DerivedInstallmentStatus {
+  if (status === "paid" || paidTotal >= amount) return "paid";
+  if (status === "overdue") return "overdue";
+
+  const today = startOfDay(new Date());
+  const due = startOfDay(new Date(dueDate));
+
+  if (due < today) return "overdue";
+  if (paidTotal > 0) return "partial";
+  return "pending";
+}
+
+export function outstandingForOrder(
+  order: { total_amount: number; down_payment_amount: number },
+  paymentsSum: number
+): number {
+  const paidSoFar = (paymentsSum || 0) + (order.down_payment_amount || 0);
+  return Math.max(0, (order.total_amount || 0) - paidSoFar);
+}

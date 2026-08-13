@@ -6,13 +6,19 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export interface Profile {
+export interface Customer {
   id: string;
   full_name: string;
-  phone: string | null;
+  phone: string;
   address: string | null;
   city: string | null;
+  notes: string | null;
   created_at: string;
+}
+
+export interface Setting {
+  key: string;
+  value: string;
 }
 
 export interface Category {
@@ -62,16 +68,11 @@ export interface InstallmentPlan {
   down_payment_percent: number;
 }
 
-export type OrderStatus =
-  | "pending"
-  | "approved"
-  | "active"
-  | "completed"
-  | "rejected";
+export type OrderStatus = "active" | "completed";
 
 export interface Order {
   id: string;
-  user_id: string;
+  customer_id: string;
   product_id: string;
   plan_id: string;
   status: OrderStatus;
@@ -84,7 +85,7 @@ export interface Order {
   installment_plan?: InstallmentPlan;
   installments?: Installment[];
   payments?: Payment[];
-  profile?: Profile;
+  customer?: Customer;
 }
 
 export type InstallmentStatus = "pending" | "paid" | "overdue";
@@ -116,12 +117,4 @@ export interface Banner {
   cta_link: string | null;
   is_active: boolean;
   sort_order: number;
-}
-
-export interface Notification {
-  id: string;
-  user_id: string;
-  message: string;
-  is_read: boolean;
-  created_at: string;
 }

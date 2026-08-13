@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Search, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { formatPKR, formatDate } from "@/lib/helpers/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +27,7 @@ function getPageItems(current: number, total: number): (number | string)[] {
 
 interface OrderItem {
   id: string;
-  user_id: string;
+  customer_id: string;
   product_id: string;
   status: string;
   total_amount: number;
@@ -35,9 +35,8 @@ interface OrderItem {
   down_payment_amount?: number;
   payment_method: string;
   created_at: string;
-  customer_email: string;
   product?: { id: string; name: string };
-  profile?: { id: string; full_name: string; phone: string; city: string; address: string };
+  customer?: { id: string; full_name: string; phone: string; city: string; address: string };
 }
 
 export default function AdminOrdersPage() {
@@ -83,10 +82,9 @@ export default function AdminOrdersPage() {
     if (!q) return true;
     return (
       (o.id || "").toLowerCase().includes(q) ||
-      (o.customer_email || "").toLowerCase().includes(q) ||
-      (o.profile?.full_name || "").toLowerCase().includes(q) ||
-      (o.profile?.phone || "").toLowerCase().includes(q) ||
-      (o.profile?.city || "").toLowerCase().includes(q) ||
+      (o.customer?.full_name || "").toLowerCase().includes(q) ||
+      (o.customer?.phone || "").toLowerCase().includes(q) ||
+      (o.customer?.city || "").toLowerCase().includes(q) ||
       (o.product?.name || "").toLowerCase().includes(q) ||
       (o.payment_method || "").toLowerCase().includes(q)
     );
@@ -102,9 +100,14 @@ export default function AdminOrdersPage() {
         <div>
           <h1 className="text-2xl font-bold">Orders</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {orders.length} orders — click customer name to view full installment timeline.
+            {orders.length} orders — click customer name to view their ledger.
           </p>
         </div>
+        <Link href="/admin/orders/new">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" /> New Order
+          </Button>
+        </Link>
       </div>
 
       {loading ? (
@@ -128,7 +131,7 @@ export default function AdminOrdersPage() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search orders by customer, product, or order #..."
+                placeholder="Search by customer, product, or order #..."
                 className="pl-9"
               />
             </div>
@@ -148,7 +151,7 @@ export default function AdminOrdersPage() {
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm capitalize"
             >
               <option value="">All methods</option>
-              {["jazzcash", "easypaisa", "bank", "card", "whatsapp"].map((m) => (
+              {["jazzcash", "easypaisa", "bank", "card", "cash", "whatsapp"].map((m) => (
                 <option key={m} value={m}>{m === "bank" ? "Bank Transfer" : m === "card" ? "Card" : m.charAt(0).toUpperCase() + m.slice(1)}</option>
               ))}
             </select>
@@ -193,60 +196,45 @@ export default function AdminOrdersPage() {
                   {paged.map((order) => {
                     return (
                       <tr key={order.id} className="border-b border-border hover:bg-muted/30">
-                        {/* Order ID */}
                         <td className="py-2.5 px-3">
                           <Link href={`/admin/orders/${order.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
                             #{order.id.slice(0, 8)}
                           </Link>
                         </td>
 
-                        {/* Customer Name Link (Same Window Navigation) */}
                         <td className="py-2.5 px-3">
                           <Link
-                            href={`/admin/customers/${encodeURIComponent(order.user_id || order.customer_email)}`}
-                            className="font-medium text-foreground hover:text-primary hover:underline flex items-center gap-1"
-                            title="Click to view customer installment timeline details"
+                            href={`/admin/customers/${order.customer_id}`}
+                            className="font-medium text-foreground hover:text-primary hover:underline"
+                            title="View customer ledger"
                           >
-                            <span>{order.profile?.full_name || order.customer_email || "Customer"}</span>
+                            {order.customer?.full_name || "Customer"}
                           </Link>
-                          <div className="text-xs text-muted-foreground truncate max-w-[130px]">
-                            {order.customer_email}
-                          </div>
                         </td>
 
-                        {/* Contact */}
                         <td className="py-2.5 px-3 text-xs">
-                          {order.profile?.phone && <div>{order.profile.phone}</div>}
-                          <div className="text-muted-foreground">{order.profile?.city || "—"}</div>
+                          {order.customer?.phone && <div>{order.customer.phone}</div>}
+                          <div className="text-muted-foreground">{order.customer?.city || "—"}</div>
                         </td>
 
-                        {/* Product */}
                         <td className="py-2.5 px-3 font-medium truncate max-w-[130px]">
                           {order.product?.name || "—"}
                         </td>
 
-                        {/* Total Amount */}
                         <td className="py-2.5 px-3 text-right font-medium">
                           {formatPKR(order.total_amount)}
                         </td>
 
-                        {/* Down Payment */}
                         <td className="py-2.5 px-3 text-right">
                           <div className="font-semibold text-amount">
-                            {formatPKR(order.down_payment_amount || Math.ceil(order.total_amount * 0.25))}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {Math.round(((order.down_payment_amount || Math.ceil(order.total_amount * 0.25)) / (order.total_amount || 1)) * 100)}% upfront
+                            {formatPKR(order.down_payment_amount || 0)}
                           </div>
                         </td>
 
-                        {/* Payment Method */}
                         <td className="py-2.5 px-3 capitalize">{order.payment_method}</td>
 
-                        {/* Date */}
                         <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{formatDate(order.created_at)}</td>
 
-                        {/* Status */}
                         <td className="py-2.5 px-3 text-right">
                           <Badge
                             variant={

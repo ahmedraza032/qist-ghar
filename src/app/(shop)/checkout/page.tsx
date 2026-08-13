@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, MessageCircle, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, MessageCircle, Check, Loader2 } from "lucide-react";
 import { formatPKR } from "@/lib/helpers/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +56,6 @@ function CheckoutPageInner() {
   const dueToday = activeDownPayment;
 
   const items = checkoutItem ? [checkoutItem] : [];
-  const total = checkoutItem ? checkoutItem.totalPrice : 0;
 
   // Calculate installment dates
   const startDate = new Date();
@@ -103,6 +102,7 @@ function CheckoutPageInner() {
     try {
       const result = await checkoutWithWhatsApp({
         productId: checkoutItem.productId,
+        productName: checkoutItem.productName,
         duration: checkoutItem.durationMonths,
         downPayment: activeDownPayment,
         monthly: calculatedMonthly,
@@ -113,36 +113,11 @@ function CheckoutPageInner() {
         city: form.city,
       });
 
-      // Generate WhatsApp Link
-      const adminPhone = "923162873835"; // Admin WhatsApp number
-      const text = `*New Order Placed!*
-Order ID: ${result.orderId}
-
-*Customer Details:*
-Name: ${form.name}
-Phone: ${form.phone}
-City: ${form.city}
-Address: ${form.address}
-
-*Order Details:*
-Product: ${checkoutItem.productName}
-Duration: ${checkoutItem.durationMonths} months
-Original Price: ${formatPKR(checkoutItem.basePrice)}
-Custom Markup: ${checkoutItem.markupPercent}%
-Down Payment: ${formatPKR(activeDownPayment)}
-Monthly Installment: ${formatPKR(calculatedMonthly)}
-Total Price: ${formatPKR(checkoutItem.totalPrice)}
-
-Please review and confirm this order.`;
-
-      const encodedText = encodeURIComponent(text);
-      const url = `https://wa.me/${adminPhone}?text=${encodedText}`;
-      
-      setWaLink(url);
+      setWaLink(result.url);
       setIsSuccess(true);
-      
+
       // Attempt to open WhatsApp
-      window.open(url, "_blank");
+      window.open(result.url, "_blank");
     } catch (err) {
       console.error(err);
       alert("Failed to place order. Please try again.");
@@ -165,13 +140,16 @@ Please review and confirm this order.`;
         </p>
         <Card className="bg-muted/50 mt-8 text-left">
           <CardContent className="pt-6">
-            <p className="text-sm mb-4 text-center">If WhatsApp didn't open automatically, click the button below:</p>
-            <Button asChild size="lg" className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white">
-              <a href={waLink} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="mr-2 h-5 w-5" />
-                Open WhatsApp
-              </a>
-            </Button>
+            <p className="text-sm mb-4 text-center">If WhatsApp didn&apos;t open automatically, click the button below:</p>
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 h-11 px-8 rounded-md text-sm font-medium bg-[#25D366] hover:bg-[#128C7E] text-white w-full"
+            >
+              <MessageCircle className="h-5 w-5" />
+              Open WhatsApp
+            </a>
             <div className="mt-4 text-center">
               <Button variant="ghost" onClick={() => router.push("/products")}>
                 Return to Shop

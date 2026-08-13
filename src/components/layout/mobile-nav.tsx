@@ -5,16 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   LayoutGrid,
-  ShoppingCart,
-  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/products", label: "Categories", icon: LayoutGrid },
-  { href: "/cart", label: "Cart", icon: ShoppingCart },
-  { href: "/account", label: "Account", icon: User },
+  { href: "/products", label: "Products", icon: LayoutGrid },
 ];
 
 export function MobileNav() {

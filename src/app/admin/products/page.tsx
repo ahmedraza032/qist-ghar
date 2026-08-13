@@ -18,13 +18,11 @@ export default async function AdminProductsPage() {
 
   const { data: orders } = await supabase
     .from("orders")
-    .select("product_id, status");
+    .select("product_id");
 
   const soldByProduct: Record<string, number> = {};
   (orders || []).forEach((o: any) => {
-    if (o.status !== "rejected") {
-      soldByProduct[o.product_id] = (soldByProduct[o.product_id] || 0) + 1;
-    }
+    soldByProduct[o.product_id] = (soldByProduct[o.product_id] || 0) + 1;
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

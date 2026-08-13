@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
 import { adminMiddleware } from "@/lib/supabase/admin-middleware";
 
 export async function middleware(request: NextRequest) {
@@ -15,7 +14,7 @@ export async function middleware(request: NextRequest) {
     if (adminCheck.status !== 200) return adminCheck;
   }
 
-  return await updateSession(request);
+  return NextResponse.next();
 }
 
 export const config = {

@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Save, Loader2, Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { Plus, Loader2, Trash2 } from "lucide-react";
+import { addBanner, deleteBanner } from "@/lib/actions/banners";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,19 +22,17 @@ export function BannerForm({ existing }: { existing: any[] }) {
   async function handleAdd() {
     if (!title || !imageUrl) return;
     setSaving(true);
-    const supabase = createClient();
 
-    const { error } = await supabase.from("banners").insert({
+    const result = await addBanner({
       title,
       image_url: imageUrl,
       cta_text: ctaText,
       cta_link: ctaLink,
-      is_active: true,
       sort_order: existing.length,
     });
 
-    if (error) {
-      addToast({ title: "Error", description: error.message, variant: "destructive" });
+    if (!result.success) {
+      addToast({ title: "Error", description: result.error || "Failed to add", variant: "destructive" });
     } else {
       addToast({ title: "Added", description: "Banner created." });
       setTitle("");
@@ -47,9 +45,12 @@ export function BannerForm({ existing }: { existing: any[] }) {
   }
 
   async function handleDelete(id: string) {
-    const supabase = createClient();
-    await supabase.from("banners").delete().eq("id", id);
-    addToast({ title: "Deleted", description: "Banner removed." });
+    const result = await deleteBanner(id);
+    if (result.success) {
+      addToast({ title: "Deleted", description: "Banner removed." });
+    } else {
+      addToast({ title: "Error", description: result.error || "Failed to delete", variant: "destructive" });
+    }
     router.refresh();
   }
 

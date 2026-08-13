@@ -2,7 +2,8 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Users, ShoppingCart, AlertTriangle } from "lucide-react";
-import { formatPKR, formatDate } from "@/lib/helpers/format";
+import { formatPKR } from "@/lib/helpers/format";
+import { outstandingForOrder } from "@/lib/helpers/installments";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export default async function AdminDashboardPage() {
 
   const [
     { count: totalOrders },
-    { count: pendingOrders },
+    { count: activeOrdersCount },
     { count: completedOrders },
     { data: allOrdersData },
     { data: recentOrders },
@@ -26,34 +27,32 @@ export default async function AdminDashboardPage() {
     supabase.from("orders").select("id, status, total_amount, down_payment_amount").gte("created_at", monthStart),
     supabase
       .from("orders")
-      .select("id, status, total_amount, down_payment_amount, payment_method, created_at, product:products(name), profile:profiles(full_name)")
+      .select("id, customer_id, status, total_amount, down_payment_amount, payment_method, created_at, product:products(name), customer:customers(full_name)")
       .gte("created_at", monthStart)
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
 
   const { data: paymentsData } = await supabase.from("payments").select("order_id, amount");
-  
+
   // Calculate payments per order
   const paymentsByOrder = new Map<string, number>();
   (paymentsData || []).forEach((p) => {
     paymentsByOrder.set(p.order_id, (paymentsByOrder.get(p.order_id) || 0) + (p.amount || 0));
   });
 
-  // Calculate remaining amount owed per order (only for active/pending orders)
+  // Calculate remaining amount owed per order (only for active orders)
   let totalRemainingOwed = 0;
   (allOrdersData || []).forEach((o) => {
     if (o.status !== "completed") {
-      const paidSoFar = (paymentsByOrder.get(o.id) || 0) + (o.down_payment_amount || 0);
-      const remainingOwed = Math.max(0, (o.total_amount || 0) - paidSoFar);
-      totalRemainingOwed += remainingOwed;
+      totalRemainingOwed += outstandingForOrder(o, paymentsByOrder.get(o.id) || 0);
     }
   });
 
   const orders = recentOrders || [];
   const totalOrdersCount = totalOrders || 0;
   const completedOrdersCount = completedOrders || 0;
-  const pendingOrdersCount = pendingOrders || 0;
+  const activeOrdersCountFinal = activeOrdersCount || 0;
 
   return (
     <div className="space-y-8">
@@ -62,7 +61,7 @@ export default async function AdminDashboardPage() {
         <p className="text-muted-foreground mt-1">Overview of your store performance.</p>
       </div>
 
-      {/* Synchronized Dashboard KPI Cards */}
+      {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -92,7 +91,7 @@ export default async function AdminDashboardPage() {
             <Users className="h-4 w-4 text-amber-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{pendingOrdersCount}</div>
+            <div className="text-2xl font-bold text-amber-600">{activeOrdersCountFinal}</div>
             <p className="text-xs text-muted-foreground">Installments remaining</p>
           </CardContent>
         </Card>
@@ -104,7 +103,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amount">{formatPKR(totalRemainingOwed)}</div>
-            <p className="text-xs text-muted-foreground">Outstanding on this month's orders</p>
+            <p className="text-xs text-muted-foreground">Outstanding on this month&apos;s orders</p>
           </CardContent>
         </Card>
       </div>
@@ -141,11 +140,11 @@ export default async function AdminDashboardPage() {
                       </td>
                       <td className="py-2 text-xs font-medium">
                         <Link
-                          href={`/admin/customers/${encodeURIComponent(order.profile?.full_name || order.customer_email || "Customer")}`}
-                          className="hover:text-primary hover:underline flex items-center gap-1"
-                          title="View customer installment details"
+                          href={`/admin/customers/${order.customer_id}`}
+                          className="hover:text-primary hover:underline"
+                          title="View customer ledger"
                         >
-                          {order.profile?.full_name || order.customer_email || "Customer"}
+                          {order.customer?.full_name || "Customer"}
                         </Link>
                       </td>
                       <td className="py-2 text-xs truncate max-w-[150px]">

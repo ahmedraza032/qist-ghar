@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 const footerLinks = {
   Shop: [
@@ -9,9 +8,9 @@ const footerLinks = {
     { href: "/products?category=tvs", label: "TVs" },
   ],
   Account: [
-    { href: "/account", label: "My Account" },
-    { href: "/account/orders", label: "My Orders" },
-    { href: "/cart", label: "Cart" },
+    { href: "/products", label: "All Products" },
+    { href: "/", label: "How It Works" },
+    { href: "#", label: "Contact" },
   ],
   Company: [
     { href: "#", label: "About Us" },

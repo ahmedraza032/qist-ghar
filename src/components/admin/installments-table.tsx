@@ -2,14 +2,20 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { formatPKR, formatDate } from "@/lib/helpers/format";
+import { deriveInstallmentStatus } from "@/lib/helpers/installments";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RecordPaymentButton } from "@/components/admin/record-payment-button";
 
-const STATUSES = ["pending", "paid", "overdue"];
+const FILTERS = [
+  { value: "due", label: "Due (Pending / Partial)" },
+  { value: "paid", label: "Paid" },
+  { value: "overdue", label: "Overdue" },
+];
 const PAGE_SIZE = 30;
 
 function getPageItems(current: number, total: number): (number | string)[] {
@@ -28,24 +34,35 @@ function getPageItems(current: number, total: number): (number | string)[] {
 
 export function InstallmentsTable({ installments }: { installments: any[] }) {
   const [query, setQuery] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("due");
   const [fromDate, setFromDate] = React.useState("");
   const [toDate, setToDate] = React.useState("");
   const [page, setPage] = React.useState(1);
 
   const q = query.trim().toLowerCase();
-  const filtered = installments.filter((i) => {
-    if (statusFilter && i.status !== statusFilter) return false;
-    const date = (i.due_date || "").slice(0, 10);
-    if (fromDate && date < fromDate) return false;
-    if (toDate && date > toDate) return false;
-    if (!q) return true;
-    return (
-      (i.order?.profile?.full_name || "").toLowerCase().includes(q) ||
-      (i.order?.product?.name || "").toLowerCase().includes(q) ||
-      (i.order?.id || "").toLowerCase().includes(q)
-    );
-  });
+  const filtered = installments
+    .map((i) => ({
+      ...i,
+      paidTotal: i.paidTotal ?? 0,
+      remaining: i.remaining ?? (i.amount ?? 0),
+      derivedStatus: deriveInstallmentStatus(i.status, i.due_date, i.paidTotal ?? 0, i.amount ?? 0),
+    }))
+    .filter((i) => {
+      if (statusFilter === "due") {
+        if (i.derivedStatus !== "pending" && i.derivedStatus !== "partial") return false;
+      } else if (statusFilter && i.derivedStatus !== statusFilter) {
+        return false;
+      }
+      const date = (i.due_date || "").slice(0, 10);
+      if (fromDate && date < fromDate) return false;
+      if (toDate && date > toDate) return false;
+      if (!q) return true;
+      return (
+        (i.order?.customer?.full_name || "").toLowerCase().includes(q) ||
+        (i.order?.product?.name || "").toLowerCase().includes(q) ||
+        String(i.order?.id || "").toLowerCase().includes(q)
+      );
+    });
 
   React.useEffect(() => {
     setPage(1);
@@ -74,8 +91,8 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
             className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="">All statuses</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+            {FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>{f.label}</option>
             ))}
           </select>
           <input
@@ -99,23 +116,31 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm table-fixed min-w-[1000px]">
               <thead>
                 <tr className="border-b border-border text-muted-foreground text-left">
+                  <th className="py-2.5 px-3 font-medium w-24">Order #</th>
                   <th className="py-2.5 px-3 font-medium">Customer</th>
-                  <th className="py-2.5 px-3 font-medium">Product</th>
-                  <th className="py-2.5 px-3 font-medium">Due Date</th>
-                  <th className="py-2.5 px-3 font-medium text-right">Amount</th>
-                  <th className="py-2.5 px-3 font-medium text-right">Paid</th>
-                  <th className="py-2.5 px-3 font-medium text-right">Status</th>
+                  <th className="py-2.5 px-3 font-medium w-44">Product</th>
+                  <th className="py-2.5 px-3 font-medium w-28">Due Date</th>
+                  <th className="py-2.5 px-3 font-medium text-right w-28">Amount</th>
+                  <th className="py-2.5 px-3 font-medium text-right w-24">Paid</th>
+                  <th className="py-2.5 px-3 font-medium text-right w-28">Remaining</th>
+                  <th className="py-2.5 px-3 font-medium text-right w-24">Status</th>
+                  <th className="py-2.5 px-3 font-medium text-right w-28">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {paged.map((inst: any) => (
                   <tr key={inst.id} className="border-b border-border hover:bg-muted/30">
                     <td className="py-2.5 px-3 text-sm">
+                      <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
+                        {inst.order?.id ? `#${inst.order.id.slice(0, 8)}` : "—"}
+                      </Link>
+                    </td>
+                    <td className="py-2.5 px-3 text-sm">
                       <Link href={`/admin/orders/${inst.order?.id}`} className="hover:text-primary hover:underline font-medium">
-                        {inst.order?.profile?.full_name || "—"}
+                        {inst.order?.customer?.full_name || "—"}
                       </Link>
                     </td>
                     <td className="py-2.5 px-3 text-sm truncate max-w-[180px]">
@@ -125,21 +150,41 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                     <td className="py-2.5 px-3 text-sm text-right font-medium">
                       {formatPKR(inst.amount)}
                     </td>
-                    <td className="py-2.5 px-3 text-sm text-right text-muted-foreground">
-                      {inst.paid_date ? formatDate(inst.paid_date) : "—"}
+                    <td className="py-2.5 px-3 text-sm text-right text-emerald-600 font-medium">
+                      {formatPKR(inst.paidTotal)}
+                    </td>
+                    <td className="py-2.5 px-3 text-sm text-right text-amount font-bold">
+                      {formatPKR(inst.remaining)}
                     </td>
                     <td className="py-2.5 px-3 text-right">
                       <Badge
                         variant={
-                          inst.status === "paid"
+                          inst.derivedStatus === "paid"
                             ? "success"
-                            : inst.status === "overdue"
+                            : inst.derivedStatus === "overdue"
                             ? "destructive"
+                            : inst.derivedStatus === "partial"
+                            ? "outline"
                             : "warning"
                         }
                       >
-                        {inst.status}
+                        {inst.derivedStatus}
                       </Badge>
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {inst.derivedStatus !== "paid" ? (
+                          <RecordPaymentButton
+                            installmentId={inst.id}
+                            dueAmount={inst.amount}
+                            remaining={inst.remaining}
+                          />
+                        ) : (
+                          <Button variant="outline" size="sm" disabled className="gap-1">
+                            <Check className="h-3 w-3" /> Paid
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

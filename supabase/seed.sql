@@ -3,7 +3,17 @@
 -- Safe to re-run: truncates existing data first
 -- Product images are verified-working Unsplash photo IDs (tech products)
 
-TRUNCATE TABLE payments, installments, orders, installment_plans, banners, notifications, products, brands, categories CASCADE;
+TRUNCATE TABLE payments, installments, orders, installment_plans, banners, settings, customers, products, brands, categories CASCADE;
+
+-- SETTINGS
+INSERT INTO settings (key, value) VALUES
+  ('whatsapp_number', '923000000000');
+
+-- CUSTOMERS (sample ledger entries)
+INSERT INTO customers (full_name, phone, address, city, notes) VALUES
+  ('Ahmed Khan', '0300-1234567', 'House 12, Street 5, Gulberg III', 'Lahore', ''),
+  ('Fatima Noor', '0312-7654321', 'Flat 7, Block B, Clifton', 'Karachi', ''),
+  ('Bilal Hussain', '0333-9988776', 'P-45, Satellite Town', 'Rawalpindi', '');
 
 -- CATEGORIES
 INSERT INTO categories (name, slug, image_url) VALUES

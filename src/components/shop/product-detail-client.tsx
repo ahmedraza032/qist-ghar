@@ -12,8 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
-import { AuthOverlay } from "@/components/shop/auth-overlay";
 
 interface Spec {
   [key: string]: string;
@@ -52,7 +50,6 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [selectedDuration, setSelectedDuration] = React.useState(3);
   const [activeTab, setActiveTab] = React.useState<"specs" | "description">("specs");
-  const [showAuthOverlay, setShowAuthOverlay] = React.useState(false);
   const effectiveBasePrice = product.base_price;
 
   const minDownPayment = Math.ceil(effectiveBasePrice * (MIN_DOWN_PAYMENT_PCT / 100));
@@ -81,15 +78,6 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
   async function handleBuyNow() {
     if (!inStock) return;
-
-    const supabase = createClient();
-    const { data } = await supabase.auth.getUser();
-
-    if (!data.user) {
-      setShowAuthOverlay(true);
-      return;
-    }
-
     router.push(`/checkout?${buyerParams}`);
   }
 
@@ -398,12 +386,6 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           </Button>
         </div>
       </div>
-
-      <AuthOverlay
-        open={showAuthOverlay}
-        onClose={() => setShowAuthOverlay(false)}
-        onSuccess={() => router.push(`/checkout?${buyerParams}`)}
-      />
     </div>
   );
 }

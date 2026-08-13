@@ -1,12 +1,15 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
 import { formatPKR, formatDate, formatReference } from "@/lib/helpers/format";
+import { deriveInstallmentStatus, outstandingForOrder } from "@/lib/helpers/installments";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MarkPaidButton } from "@/components/admin/mark-paid-button";
+import { RecordPaymentButton } from "@/components/admin/record-payment-button";
+import { DownloadReceiptButton } from "@/components/admin/download-receipt-button";
+import type { ReceiptData } from "@/components/admin/receipt-pdf";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +24,7 @@ export default async function AdminOrderDetailPage({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, down_payment_amount, monthly_amount, total_amount, payment_method, created_at, product:products(name, images, base_price), plan:installment_plans(duration_months, markup_percent), profile:profiles(full_name, phone, address, city, created_at)"
+      "id, customer_id, status, down_payment_amount, monthly_amount, total_amount, payment_method, created_at, product:products(name, images, base_price), plan:installment_plans(duration_months, markup_percent), customer:customers(full_name, phone, address, city, created_at)"
     )
     .eq("id", id)
     .single();
@@ -46,17 +49,66 @@ export default async function AdminOrderDetailPage({
   const instList = installments || [];
   const payList = payments || [];
 
+  const paidByInstallment = new Map<string, number>();
+  (payList || []).forEach((p: any) => {
+    if (p.installment_id) {
+      paidByInstallment.set(p.installment_id, (paidByInstallment.get(p.installment_id) || 0) + (p.amount || 0));
+    }
+  });
+
+  const instRows = instList.map((inst: any) => {
+    const paidTotal = paidByInstallment.get(inst.id) || 0;
+    return { ...inst, paidTotal, remaining: Math.max(0, inst.amount - paidTotal) };
+  });
+
   // Get customer order stats
   const { data: customerOrders } = await supabase
     .from("orders")
-    .select("total_amount, status")
-    .eq("user_id", o.user_id as string);
+    .select("id, status, total_amount, down_payment_amount")
+    .eq("customer_id", o.customer_id as string);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const custOrders = (customerOrders || []) as any[];
+  const custOrderIds = custOrders.map((co: any) => co.id);
+
+  const { data: customerPayments } = custOrderIds.length > 0
+    ? await supabase.from("payments").select("order_id, installment_id, amount").in("order_id", custOrderIds)
+    : { data: [] };
+
+  const installmentPaymentsByOrder = new Map<string, number>();
+  (customerPayments || []).forEach((p: any) => {
+    if (p.installment_id) {
+      installmentPaymentsByOrder.set(p.order_id, (installmentPaymentsByOrder.get(p.order_id) || 0) + (p.amount || 0));
+    }
+  });
+
   const totalSpent = custOrders.reduce((s: number, co: any) => s + (co.total_amount || 0), 0);
   const activeOrders = custOrders.filter((co: any) => co.status === "active").length;
   const completedOrders = custOrders.filter((co: any) => co.status === "completed").length;
+  const totalOutstanding = custOrders.reduce(
+    (s: number, co: any) => s + outstandingForOrder(co, installmentPaymentsByOrder.get(co.id) || 0),
+    0
+  );
+
+  const receiptData: ReceiptData = {
+    orderId: o.id,
+    productName: o.product?.name || "—",
+    durationMonths: o.plan?.duration_months || 0,
+    downPayment: o.down_payment_amount,
+    monthlyAmount: o.monthly_amount,
+    totalAmount: o.total_amount,
+    paymentMethod: o.payment_method,
+    date: o.created_at,
+    customerName: o.customer?.full_name || "—",
+    customerPhone: o.customer?.phone || "—",
+    customerAddress: o.customer?.address || "—",
+    installments: instRows.map((inst: any, i: number) => ({
+      number: i + 1,
+      dueDate: inst.due_date,
+      amount: inst.amount,
+      status: deriveInstallmentStatus(inst.status, inst.due_date, inst.paidTotal, inst.amount) === "paid" ? "paid" : "pending",
+    })),
+  };
 
   async function updateStatus(formData: FormData) {
     "use server";
@@ -73,18 +125,11 @@ export default async function AdminOrderDetailPage({
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">Order #{id.slice(0, 8)}</h1>
+          <h1 className="text-2xl font-bold">Order #{o.id.slice(0, 8)}</h1>
           <p className="text-sm text-muted-foreground">{formatDate(o.created_at)}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Link
-            href={`/account/orders/${id}`}
-            target="_blank"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary px-2 py-1 rounded-md hover:bg-muted transition-colors"
-          >
-            <ExternalLink className="h-3 w-3" />
-            Customer View
-          </Link>
+          <DownloadReceiptButton data={receiptData} />
           <Badge
             variant={
               o.status === "completed"
@@ -148,32 +193,40 @@ export default async function AdminOrderDetailPage({
                     <th className="text-left py-2 font-medium">Due Date</th>
                     <th className="text-right py-2 font-medium">Amount</th>
                     <th className="text-right py-2 font-medium">Paid</th>
+                    <th className="text-right py-2 font-medium">Remaining</th>
                     <th className="text-right py-2 font-medium">Status</th>
+                    <th className="text-right py-2 font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {instList.map((inst, i) => (
+                  {instRows.map((inst: any, i) => {
+                    const derived = deriveInstallmentStatus(inst.status, inst.due_date, inst.paidTotal, inst.amount);
+                    return (
                     <tr key={inst.id} className="border-b border-border">
                       <td className="py-2">{i + 1}</td>
                       <td className="py-2">{formatDate(inst.due_date)}</td>
                       <td className="py-2 text-right">{formatPKR(inst.amount)}</td>
-                      <td className="py-2 text-right">{inst.paid_date ? formatDate(inst.paid_date) : "—"}</td>
+                      <td className="py-2 text-right text-emerald-600">{formatPKR(inst.paidTotal)}</td>
+                      <td className="py-2 text-right text-amount">{formatPKR(inst.remaining)}</td>
                       <td className="py-2 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Badge
-                            variant={
-                              inst.status === "paid" ? "success" : inst.status === "overdue" ? "destructive" : "warning"
-                            }
-                          >
-                            {inst.status}
-                          </Badge>
-                          {inst.status !== "paid" && (
-                            <MarkPaidButton installmentId={inst.id} orderId={id} />
-                          )}
-                        </div>
+                        <Badge
+                          variant={
+                            derived === "paid" ? "success" : derived === "overdue" ? "destructive" : derived === "partial" ? "outline" : "warning"
+                          }
+                        >
+                          {derived}
+                        </Badge>
+                      </td>
+                      <td className="py-2 text-right">
+                        {derived !== "paid" ? (
+                          <RecordPaymentButton installmentId={inst.id} dueAmount={inst.amount} remaining={inst.remaining} />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
               </div>
@@ -191,25 +244,25 @@ export default async function AdminOrderDetailPage({
             <CardContent className="space-y-3">
               <div>
                 <p className="text-sm text-muted-foreground">Name</p>
-                <p className="font-semibold text-base">{o.profile?.full_name || "—"}</p>
+                <p className="font-semibold text-base">{o.customer?.full_name || "—"}</p>
               </div>
               <div className="border-t border-border pt-3 grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-muted-foreground text-xs">Phone</p>
-                  <p className="font-medium">{o.profile?.phone || "—"}</p>
+                  <p className="font-medium">{o.customer?.phone || "—"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">City</p>
-                  <p className="font-medium">{o.profile?.city || "—"}</p>
+                  <p className="font-medium">{o.customer?.city || "—"}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-muted-foreground text-xs">Address</p>
-                  <p className="font-medium">{o.profile?.address || "—"}</p>
+                  <p className="font-medium">{o.customer?.address || "—"}</p>
                 </div>
               </div>
               <div className="border-t border-border pt-3">
                 <p className="text-muted-foreground text-xs">Customer Since</p>
-                <p className="font-medium text-sm">{o.profile?.created_at ? formatDate(o.profile.created_at) : "—"}</p>
+                <p className="font-medium text-sm">{o.customer?.created_at ? formatDate(o.customer.created_at) : "—"}</p>
               </div>
               <div className="border-t border-border pt-3 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                 <div className="text-center">
@@ -225,15 +278,21 @@ export default async function AdminOrderDetailPage({
                   <p className="text-xs text-muted-foreground">Active</p>
                 </div>
               </div>
-              <div className="border-t border-border pt-3 text-center">
-                <p className="text-xs text-muted-foreground">Total Spent</p>
-                <p className="text-xl font-bold text-primary">{formatPKR(totalSpent)}</p>
+              <div className="border-t border-border pt-3 grid grid-cols-2 gap-3 text-sm">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Total Spent</p>
+                  <p className="text-xl font-bold text-primary">{formatPKR(totalSpent)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Total Outstanding</p>
+                  <p className="text-xl font-bold text-amount">{formatPKR(totalOutstanding)}</p>
+                </div>
               </div>
               <a
-                href={`/admin/customers/${o.user_id}`}
+                href={`/admin/customers/${o.customer_id}`}
                 className="block w-full text-center text-sm text-primary hover:underline font-medium pt-1"
               >
-                View Full Profile
+                View Full Ledger
               </a>
             </CardContent>
           </Card>
