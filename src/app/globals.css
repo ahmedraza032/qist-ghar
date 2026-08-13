@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-card: var(--card-bg);
+  --color-card-foreground: var(--card-fg);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-fg);
+  --color-secondary: var(--secondary-bg);
+  --color-secondary-foreground: var(--secondary-fg);
+  --color-muted: var(--muted-bg);
+  --color-muted-foreground: var(--muted-fg);
+  --color-accent: var(--accent-bg);
+  --color-accent-foreground: var(--accent-fg);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-fg);
+  --color-amount: var(--amount);
+  --color-border: var(--border-c);
+  --color-input: var(--input-c);
+  --color-ring: var(--ring-c);
+}
+
+:root {
+  --bg: #ffffff;
+  --fg: #0a0a0a;
+  --card-bg: #ffffff;
+  --card-fg: #0a0a0a;
+  --primary: #16a34a;
+  --primary-fg: #ffffff;
+  --secondary-bg: #f4f4f5;
+  --secondary-fg: #18181b;
+  --muted-bg: #f4f4f5;
+  --muted-fg: #71717a;
+  --accent-bg: #f4f4f5;
+  --accent-fg: #18181b;
+  --destructive: #dc2626;
+  --destructive-fg: #fafafa;
+  --border-c: #e4e4e7;
+  --input-c: #e4e4e7;
+  --ring-c: #16a34a;
+  --amount: #ea580c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a;
+    --fg: #fafafa;
+    --card-bg: #0a0a0a;
+    --card-fg: #fafafa;
+    --primary: #22c55e;
+    --primary-fg: #052e16;
+    --secondary-bg: #27272a;
+    --secondary-fg: #fafafa;
+    --muted-bg: #27272a;
+    --muted-fg: #a1a1aa;
+    --accent-bg: #27272a;
+    --accent-fg: #fafafa;
+    --destructive: #7f1d1d;
+    --destructive-fg: #fafafa;
+    --border-c: #27272a;
+    --input-c: #27272a;
+    --ring-c: #22c55e;
+    --amount: #fb923c;
+  }
+}
+
+* {
+  border-color: var(--border-c);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
