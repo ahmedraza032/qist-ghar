@@ -25,17 +25,9 @@ const sidebarLinks = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-
-  if (pathname === "/admin/login") {
-    return <>{children}</>;
-  }
 
   return (
     <div className="flex min-h-[100dvh] bg-muted/30">
