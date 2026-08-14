@@ -6,9 +6,10 @@ export const dynamic = "force-dynamic";
 export default async function NewProductPage() {
   const supabase = await createServiceClient();
 
-  const [catRes, brandRes] = await Promise.all([
+  const [catRes, brandRes, defaultVarsRes] = await Promise.all([
     supabase.from("categories").select("id, name").order("name"),
     supabase.from("brands").select("id, name").order("name"),
+    supabase.from("category_default_variant_attributes").select("*"),
   ]);
 
   return (
@@ -16,6 +17,7 @@ export default async function NewProductPage() {
       categories={catRes.data || []}
       brands={brandRes.data || []}
       product={null}
+      defaultVariants={defaultVarsRes.data || []}
     />
   );
 }

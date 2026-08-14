@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 import { slugify, formatPKR } from "@/lib/helpers/format";
+import { ProductVariantEditor, ProductVariants, VariantAttribute } from "./product-variant-editor";
 
 interface Category {
   id: string;
@@ -27,9 +28,10 @@ interface ProductFormProps {
   categories: Category[];
   brands: Brand[];
   product: any | null;
+  defaultVariants?: any[];
 }
 
-export function ProductForm({ categories, brands, product }: ProductFormProps) {
+export function ProductForm({ categories, brands, product, defaultVariants = [] }: ProductFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const isEdit = !!product;
@@ -48,6 +50,43 @@ export function ProductForm({ categories, brands, product }: ProductFormProps) {
   const [specs, setSpecs] = React.useState<{ key: string; value: string }[]>(
     product?.specs ? Object.entries(product.specs as Record<string, string>).map(([k, v]) => ({ key: k, value: v })) : []
   );
+
+  // Parse existing variants or initialize from defaults if new product
+  const initialVariants: ProductVariants = React.useMemo(() => {
+    if (product?.variant_attributes && product.variant_attributes.length > 0) {
+      const attrs = product.variant_attributes.map((a: any) => ({
+        id: a.id,
+        name: a.name,
+        options: a.options.map((o: any) => ({ id: o.id, value: o.value })),
+      }));
+      const combos = (product.variant_combinations || []).map((c: any) => ({
+        id: c.id,
+        options: c.combination_options.map((co: any) => {
+          // Find option value from id
+          for (const a of attrs) {
+            const opt = a.options.find((o: any) => o.id === co.variant_option_id);
+            if (opt) return opt.value;
+          }
+          return "";
+        }).filter(Boolean),
+        price_adjustment: c.price_adjustment,
+        stock_qty: c.stock_qty,
+      }));
+      return { attributes: attrs, combinations: combos };
+    }
+    
+    if (!isEdit && defaultVariants.length > 0) {
+      return {
+        attributes: defaultVariants.map((d: any) => ({ name: d.attribute_name, options: [] })),
+        combinations: []
+      };
+    }
+
+    return { attributes: [], combinations: [] };
+  }, [product, defaultVariants, isEdit]);
+
+  const [variants, setVariants] = React.useState<ProductVariants>(initialVariants);
+
   const [saving, setSaving] = React.useState(false);
 
   const base = parseFloat(basePrice) || 0;
@@ -102,6 +141,7 @@ export function ProductForm({ categories, brands, product }: ProductFormProps) {
       is_published: isPublished,
       imagesJson: JSON.stringify(images),
       specsJson: JSON.stringify(specObj),
+      variantsJson: JSON.stringify(variants),
     };
 
     try {
@@ -304,6 +344,12 @@ export function ProductForm({ categories, brands, product }: ProductFormProps) {
           )}
         </CardContent>
       </Card>
+
+      <ProductVariantEditor
+        value={variants}
+        onChange={setVariants}
+        basePrice={parseFloat(basePrice) || 0}
+      />
 
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 cursor-pointer">

@@ -128,7 +128,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         <div className="flex items-center h-16 px-4 border-b border-border bg-background lg:hidden">
           <button onClick={() => setSidebarOpen(true)} className="p-2">
             <Menu className="h-5 w-5" />

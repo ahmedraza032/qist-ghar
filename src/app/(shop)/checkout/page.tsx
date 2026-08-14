@@ -38,6 +38,8 @@ function CheckoutPageInner() {
         downPayment: parseInt(searchParams.get("down_payment") || "0"),
         monthlyPayment: parseInt(searchParams.get("monthly") || "0"),
         totalPrice: parseInt(searchParams.get("total") || "0"),
+        variantId: searchParams.get("variant_id") || "",
+        variantName: searchParams.get("variant_name") || "",
       }
     : null;
 
@@ -111,6 +113,8 @@ function CheckoutPageInner() {
         phone: form.phone,
         address: form.address,
         city: form.city,
+        variantId: checkoutItem.variantId,
+        variantName: checkoutItem.variantName,
       });
 
       setWaLink(result.url);
@@ -247,6 +251,9 @@ function CheckoutPageInner() {
               {items.map((item) => (
                 <div key={item.productId}>
                   <p className="font-medium">{item.productName}</p>
+                  {item.variantName && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{item.variantName}</p>
+                  )}
                   <div className="mt-3 space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Original Price</span>

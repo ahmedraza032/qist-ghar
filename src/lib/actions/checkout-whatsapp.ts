@@ -1,6 +1,12 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/server";
+import { createOrder } from "./orders";
+import {
+  DEFAULT_WHATSAPP_NUMBER,
+  normalizeWhatsAppNumber,
+  generateWhatsAppOrderMessage,
+} from "@/lib/helpers/whatsapp";
 
 export interface CheckoutWhatsAppInput {
   productId: string;
@@ -13,47 +19,88 @@ export interface CheckoutWhatsAppInput {
   phone: string;
   address: string;
   city: string;
+  variantId?: string;
+  variantName?: string;
 }
 
 export async function getWhatsAppNumber(): Promise<string> {
-  const supabase = await createServiceClient();
-  const { data } = await supabase
-    .from("settings")
-    .select("value")
-    .eq("key", "whatsapp_number")
-    .maybeSingle();
-  return data?.value || "";
+  try {
+    const supabase = await createServiceClient();
+    const { data } = await supabase
+      .from("settings")
+      .select("value")
+      .eq("key", "whatsapp_number")
+      .maybeSingle();
+
+    if (data?.value && data.value.trim()) {
+      return normalizeWhatsAppNumber(data.value);
+    }
+  } catch (err) {
+    console.error("Failed to read whatsapp_number from settings:", err);
+  }
+  return DEFAULT_WHATSAPP_NUMBER;
 }
 
-export async function checkoutWithWhatsApp(input: CheckoutWhatsAppInput): Promise<{ url: string; adminPhone: string }> {
-  const { productName, duration, downPayment, monthly, total, name, phone, address, city } = input;
+export async function checkoutWithWhatsApp(
+  input: CheckoutWhatsAppInput
+): Promise<{ url: string; adminPhone: string; orderId?: string }> {
+  const {
+    productId,
+    productName,
+    duration,
+    downPayment,
+    monthly,
+    total,
+    name,
+    phone,
+    address,
+    city,
+    variantId,
+    variantName,
+  } = input;
 
-  const adminPhone = await getWhatsAppNumber();
-  if (!adminPhone) {
-    throw new Error("WhatsApp number is not configured. Please contact the store owner.");
+  const rawAdminPhone = await getWhatsAppNumber();
+  const adminPhone = normalizeWhatsAppNumber(rawAdminPhone);
+
+  // Automatically save order in Supabase admin database
+  let createdOrderId: string | undefined;
+  try {
+    const orderRes = await createOrder({
+      customerName: name,
+      customerPhone: phone,
+      customerAddress: address,
+      customerCity: city,
+      productId,
+      durationMonths: duration,
+      downPaymentAmount: downPayment,
+      monthlyAmount: monthly,
+      totalAmount: total,
+      paymentMethod: "whatsapp",
+      startDate: new Date().toISOString(),
+      variantCombinationId: variantId,
+    });
+    if (orderRes.success && orderRes.orderId) {
+      createdOrderId = orderRes.orderId;
+    }
+  } catch (err) {
+    console.warn("Notice: could not auto-create order record in DB:", err);
   }
 
-  const lines = [
-    "*New Order Inquiry*",
-    "",
-    "*Customer Details:*",
-    `Name: ${name}`,
-    `Phone: ${phone}`,
-    `City: ${city}`,
-    `Address: ${address}`,
-    "",
-    "*Order Details:*",
-    `Product: ${productName}`,
-    `Duration: ${duration} months`,
-    `Down Payment: PKR ${downPayment.toLocaleString()}`,
-    `Monthly Installment: PKR ${monthly.toLocaleString()}`,
-    `Total: PKR ${total.toLocaleString()}`,
-    "",
-    "Please confirm my order. Thank you.",
-  ];
+  const text = generateWhatsAppOrderMessage({
+    productName,
+    duration,
+    downPayment,
+    monthly,
+    total,
+    name,
+    phone,
+    address,
+    city,
+    orderId: createdOrderId,
+    variantName,
+  });
 
-  const text = lines.join("\n");
   const url = `https://wa.me/${adminPhone}?text=${encodeURIComponent(text)}`;
 
-  return { url, adminPhone };
+  return { url, adminPhone, orderId: createdOrderId };
 }

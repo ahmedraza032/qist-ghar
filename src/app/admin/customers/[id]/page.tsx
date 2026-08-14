@@ -125,37 +125,80 @@ export default async function CustomerDetailPage({
           {rows.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">No orders yet.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground text-left">
-                    <th className="py-2 px-3 font-medium">Order</th>
-                    <th className="py-2 px-3 font-medium">Product</th>
-                    <th className="py-2 px-3 font-medium text-right">Total</th>
-                    <th className="py-2 px-3 font-medium text-right">Paid</th>
-                    <th className="py-2 px-3 font-medium text-right">Outstanding</th>
-                    <th className="py-2 px-3 font-medium text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r: any) => (
-                    <tr key={r.id} className="border-b border-border hover:bg-muted/30">
-                      <td className="py-2 px-3">
-                        <Link href={`/admin/orders/${r.id}`} className="font-mono text-xs text-primary hover:underline">
+            <div className="rounded-lg sm:border sm:border-border sm:bg-card">
+              {/* Desktop Table */}
+              <div className="hidden sm:block overflow-x-auto w-full">
+                <table className="w-full text-sm min-w-[800px]">
+                  <thead>
+                    <tr className="border-b border-border text-muted-foreground text-left whitespace-nowrap">
+                      <th className="py-2 px-3 font-medium">Order</th>
+                      <th className="py-2 px-3 font-medium">Product</th>
+                      <th className="py-2 px-3 font-medium text-right">Total</th>
+                      <th className="py-2 px-3 font-medium text-right">Paid</th>
+                      <th className="py-2 px-3 font-medium text-right">Outstanding</th>
+                      <th className="py-2 px-3 font-medium text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r: any) => (
+                      <tr key={r.id} className="border-b border-border hover:bg-muted/30">
+                        <td className="py-2 px-3">
+                          <Link href={`/admin/orders/${r.id}`} className="font-mono text-xs text-primary hover:underline">
+                            #{r.id.slice(0, 8)}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-3 text-xs truncate max-w-[180px]">{r.product?.name || "—"}</td>
+                        <td className="py-2 px-3 text-right font-medium">{formatPKR(r.total_amount)}</td>
+                        <td className="py-2 px-3 text-right text-emerald-600">{formatPKR(r.paid)}</td>
+                        <td className="py-2 px-3 text-right text-amount">{formatPKR(r.outstanding)}</td>
+                        <td className="py-2 px-3 text-right">
+                          <Badge variant={r.status === "completed" ? "success" : "warning"}>{r.status}</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="sm:hidden flex flex-col gap-4">
+                {rows.map((r: any) => (
+                  <div key={r.id} className="rounded-lg border border-border bg-card overflow-hidden">
+                    <div className="bg-muted/40 px-4 py-3 border-b border-border flex justify-between items-center">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground font-medium mb-1">Order #</span>
+                        <Link href={`/admin/orders/${r.id}`} className="font-mono text-sm text-primary hover:underline font-bold">
                           #{r.id.slice(0, 8)}
                         </Link>
-                      </td>
-                      <td className="py-2 px-3 text-xs truncate max-w-[180px]">{r.product?.name || "—"}</td>
-                      <td className="py-2 px-3 text-right font-medium">{formatPKR(r.total_amount)}</td>
-                      <td className="py-2 px-3 text-right text-emerald-600">{formatPKR(r.paid)}</td>
-                      <td className="py-2 px-3 text-right text-amount">{formatPKR(r.outstanding)}</td>
-                      <td className="py-2 px-3 text-right">
-                        <Badge variant={r.status === "completed" ? "success" : "warning"}>{r.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs text-muted-foreground font-medium mb-1">Status</span>
+                        <Badge variant={r.status === "completed" ? "success" : "warning"} className="text-xs px-1.5 py-0.5">
+                          {r.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between items-center border-b border-border pb-3">
+                        <span className="text-sm text-muted-foreground">Product</span>
+                        <span className="text-sm font-medium text-right line-clamp-2 max-w-[160px]">{r.product?.name || "—"}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-border pb-3">
+                        <span className="text-sm text-muted-foreground">Total</span>
+                        <span className="text-sm font-medium">{formatPKR(r.total_amount)}</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-border pb-3">
+                        <span className="text-sm text-muted-foreground">Paid</span>
+                        <span className="text-sm text-emerald-600 font-medium">{formatPKR(r.paid)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Outstanding</span>
+                        <span className="text-sm text-amount font-bold">{formatPKR(r.outstanding)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>

@@ -3,7 +3,8 @@
 import React from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { downloadReceipt, type ReceiptData } from "@/components/admin/receipt-pdf";
+import { downloadReceipt } from "@/components/admin/receipt-pdf";
+import type { ReceiptData } from "@/types/receipt";
 
 export function DownloadReceiptButton({ data }: { data: ReceiptData }) {
   const [busy, setBusy] = React.useState(false);

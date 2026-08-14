@@ -43,20 +43,7 @@ const styles = StyleSheet.create({
   total: { borderTop: "2 solid #000", marginTop: 8, paddingTop: 8 },
 });
 
-export interface ReceiptData {
-  orderId: string;
-  productName: string;
-  durationMonths: number;
-  downPayment: number;
-  monthlyAmount: number;
-  totalAmount: number;
-  paymentMethod: string;
-  date: string;
-  customerName: string;
-  customerPhone: string;
-  customerAddress: string;
-  installments: { number: number; dueDate: string; amount: number; status: string }[];
-}
+import type { ReceiptData } from "@/types/receipt";
 
 export function ReceiptPDF({ data }: { data: ReceiptData }) {
   return (

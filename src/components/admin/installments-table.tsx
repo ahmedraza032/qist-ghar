@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Check, Filter } from "lucide-react";
 import { formatPKR, formatDate } from "@/lib/helpers/format";
 import { deriveInstallmentStatus } from "@/lib/helpers/installments";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RecordPaymentButton } from "@/components/admin/record-payment-button";
+import { cn } from "@/lib/utils";
 
 const FILTERS = [
   { value: "due", label: "Due (Pending / Partial)" },
@@ -38,6 +39,7 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
   const [fromDate, setFromDate] = React.useState("");
   const [toDate, setToDate] = React.useState("");
   const [page, setPage] = React.useState(1);
+  const [showFilters, setShowFilters] = React.useState(false);
 
   const q = query.trim().toLowerCase();
   const filtered = installments
@@ -75,39 +77,61 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
   return (
     <Card>
       <CardContent className="pt-6 space-y-4">
-        <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
+        <div className="sm:hidden mb-2">
+          <Button
+            variant="outline"
+            className="w-full gap-2 min-h-[44px]"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4" />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </Button>
+        </div>
+
+        <div className={cn(
+          "flex-col sm:flex-row flex-wrap gap-3",
+          showFilters ? "flex" : "hidden sm:flex"
+        )}>
+          <div className="relative flex-1 w-full sm:w-auto min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by customer, product, or order #..."
-              className="pl-9"
+              className="pl-9 w-full min-h-[44px] sm:h-10"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="w-full sm:w-auto min-h-[44px] sm:h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="">All statuses</option>
             {FILTERS.map((f) => (
               <option key={f.value} value={f.value}>{f.label}</option>
             ))}
           </select>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-          <span className="self-center text-muted-foreground text-sm">to</span>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:items-center">
+            <div className="flex flex-col gap-1 w-full sm:w-auto">
+              <span className="text-xs font-medium text-muted-foreground sm:hidden">From</span>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-full sm:w-auto min-h-[44px] sm:h-10 rounded-md border border-input bg-background px-3 py-2 text-[16px] sm:text-sm"
+              />
+            </div>
+            <span className="hidden sm:inline text-muted-foreground text-sm">to</span>
+            <div className="flex flex-col gap-1 w-full sm:w-auto">
+              <span className="text-xs font-medium text-muted-foreground sm:hidden">To</span>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="w-full sm:w-auto min-h-[44px] sm:h-10 rounded-md border border-input bg-background px-3 py-2 text-[16px] sm:text-sm"
+              />
+            </div>
+          </div>
         </div>
 
         {filtered.length === 0 ? (
@@ -115,48 +139,98 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
             No installments found.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm table-fixed min-w-[1000px]">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground text-left">
-                  <th className="py-2.5 px-3 font-medium w-24">Order #</th>
-                  <th className="py-2.5 px-3 font-medium">Customer</th>
-                  <th className="py-2.5 px-3 font-medium w-44">Product</th>
-                  <th className="py-2.5 px-3 font-medium w-28">Due Date</th>
-                  <th className="py-2.5 px-3 font-medium text-right w-28">Amount</th>
-                  <th className="py-2.5 px-3 font-medium text-right w-24">Paid</th>
-                  <th className="py-2.5 px-3 font-medium text-right w-28">Remaining</th>
-                  <th className="py-2.5 px-3 font-medium text-right w-24">Status</th>
-                  <th className="py-2.5 px-3 font-medium text-right w-28">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paged.map((inst: any) => (
-                  <tr key={inst.id} className="border-b border-border hover:bg-muted/30">
-                    <td className="py-2.5 px-3 text-sm">
-                      <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
+          <div className="rounded-lg sm:border sm:border-border sm:bg-card">
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto w-full">
+              <table className="w-full text-sm table-fixed min-w-[1000px]">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground text-left">
+                    <th className="py-2.5 px-3 font-medium w-24">Order #</th>
+                    <th className="py-2.5 px-3 font-medium">Customer</th>
+                    <th className="py-2.5 px-3 font-medium w-44">Product</th>
+                    <th className="py-2.5 px-3 font-medium w-28">Due Date</th>
+                    <th className="py-2.5 px-3 font-medium text-right w-28">Amount</th>
+                    <th className="py-2.5 px-3 font-medium text-right w-24">Paid</th>
+                    <th className="py-2.5 px-3 font-medium text-right w-28">Remaining</th>
+                    <th className="py-2.5 px-3 font-medium text-right w-24">Status</th>
+                    <th className="py-2.5 px-3 font-medium text-right w-28">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paged.map((inst: any) => (
+                    <tr key={inst.id} className="border-b border-border hover:bg-muted/30">
+                      <td className="py-2.5 px-3 text-sm">
+                        <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
+                          {inst.order?.id ? `#${inst.order.id.slice(0, 8)}` : "—"}
+                        </Link>
+                      </td>
+                      <td className="py-2.5 px-3 text-sm">
+                        <Link href={`/admin/orders/${inst.order?.id}`} className="hover:text-primary hover:underline font-medium">
+                          {inst.order?.customer?.full_name || "—"}
+                        </Link>
+                      </td>
+                      <td className="py-2.5 px-3 text-sm truncate max-w-[180px]">
+                        {inst.order?.product?.name || "—"}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm">{formatDate(inst.due_date)}</td>
+                      <td className="py-2.5 px-3 text-sm text-right font-medium">
+                        {formatPKR(inst.amount)}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-right text-emerald-600 font-medium">
+                        {formatPKR(inst.paidTotal)}
+                      </td>
+                      <td className="py-2.5 px-3 text-sm text-right text-amount font-bold">
+                        {formatPKR(inst.remaining)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <Badge
+                          variant={
+                            inst.derivedStatus === "paid"
+                              ? "success"
+                              : inst.derivedStatus === "overdue"
+                              ? "destructive"
+                              : inst.derivedStatus === "partial"
+                              ? "outline"
+                              : "warning"
+                          }
+                        >
+                          {inst.derivedStatus}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {inst.derivedStatus !== "paid" ? (
+                            <RecordPaymentButton
+                              installmentId={inst.id}
+                              dueAmount={inst.amount}
+                              remaining={inst.remaining}
+                            />
+                          ) : (
+                            <Button variant="outline" size="sm" disabled className="gap-1">
+                              <Check className="h-3 w-3" /> Paid
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="sm:hidden flex flex-col gap-4">
+              {paged.map((inst: any) => (
+                <Card key={inst.id} className="overflow-hidden">
+                  <div className="bg-muted/40 px-4 py-3 border-b border-border flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground font-medium mb-1">Order #</span>
+                      <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-bold">
                         {inst.order?.id ? `#${inst.order.id.slice(0, 8)}` : "—"}
                       </Link>
-                    </td>
-                    <td className="py-2.5 px-3 text-sm">
-                      <Link href={`/admin/orders/${inst.order?.id}`} className="hover:text-primary hover:underline font-medium">
-                        {inst.order?.customer?.full_name || "—"}
-                      </Link>
-                    </td>
-                    <td className="py-2.5 px-3 text-sm truncate max-w-[180px]">
-                      {inst.order?.product?.name || "—"}
-                    </td>
-                    <td className="py-2.5 px-3 text-sm">{formatDate(inst.due_date)}</td>
-                    <td className="py-2.5 px-3 text-sm text-right font-medium">
-                      {formatPKR(inst.amount)}
-                    </td>
-                    <td className="py-2.5 px-3 text-sm text-right text-emerald-600 font-medium">
-                      {formatPKR(inst.paidTotal)}
-                    </td>
-                    <td className="py-2.5 px-3 text-sm text-right text-amount font-bold">
-                      {formatPKR(inst.remaining)}
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs text-muted-foreground font-medium mb-1">Status</span>
                       <Badge
                         variant={
                           inst.derivedStatus === "paid"
@@ -167,29 +241,58 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                             ? "outline"
                             : "warning"
                         }
+                        className="text-xs px-1.5 py-0.5"
                       >
                         {inst.derivedStatus}
                       </Badge>
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {inst.derivedStatus !== "paid" ? (
+                    </div>
+                  </div>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">Customer</span>
+                      <Link href={`/admin/orders/${inst.order?.id}`} className="font-bold text-foreground hover:text-primary hover:underline block text-sm text-right">
+                        {inst.order?.customer?.full_name || "—"}
+                      </Link>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">Product</span>
+                      <span className="text-sm font-medium text-right line-clamp-2 max-w-[160px]">{inst.order?.product?.name || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">Due Date</span>
+                      <span className="text-sm">{formatDate(inst.due_date)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">Amount</span>
+                      <span className="text-sm font-medium">{formatPKR(inst.amount)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">Paid</span>
+                      <span className="text-sm text-emerald-600 font-medium">{formatPKR(inst.paidTotal)}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border pb-4">
+                      <span className="text-sm text-muted-foreground">Remaining</span>
+                      <span className="text-sm text-amount font-bold">{formatPKR(inst.remaining)}</span>
+                    </div>
+                    <div className="pt-1">
+                      {inst.derivedStatus !== "paid" ? (
+                        <div className="w-full">
                           <RecordPaymentButton
                             installmentId={inst.id}
                             dueAmount={inst.amount}
                             remaining={inst.remaining}
                           />
-                        ) : (
-                          <Button variant="outline" size="sm" disabled className="gap-1">
-                            <Check className="h-3 w-3" /> Paid
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="lg" disabled className="w-full gap-2">
+                          <Check className="h-4 w-4" /> Paid
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 

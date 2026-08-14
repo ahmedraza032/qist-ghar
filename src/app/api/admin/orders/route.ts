@@ -8,7 +8,7 @@ export async function GET() {
     const { data: ordersData, error: ordersError } = await supabase
       .from("orders")
       .select(
-        "id, customer_id, product_id, status, total_amount, monthly_amount, down_payment_amount, payment_method, created_at, product:products(id, name), customer:customers(id, full_name, phone, city, address)"
+        "id, customer_id, product_id, status, total_amount, monthly_amount, down_payment_amount, payment_method, created_at, product:products(id, name), customer:customers(id, full_name, phone, city, address), variant_combination:product_variant_combinations(id, combination_options:product_variant_combination_options(option:product_variant_options(value)))"
       )
       .order("created_at", { ascending: false });
 

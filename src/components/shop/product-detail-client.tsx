@@ -28,6 +28,8 @@ interface ProductDetail {
   stock_qty: number;
   brand?: { name: string; id: string };
   category?: { name: string; slug: string };
+  variant_attributes?: any[];
+  variant_combinations?: any[];
 }
 
 interface RelatedProduct {
@@ -50,7 +52,31 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [selectedDuration, setSelectedDuration] = React.useState(3);
   const [activeTab, setActiveTab] = React.useState<"specs" | "description">("specs");
-  const effectiveBasePrice = product.base_price;
+  
+  // Variant Selection State (attribute_id -> option_id)
+  const [selectedVariants, setSelectedVariants] = React.useState<Record<string, string>>({});
+
+  const attrs = product.variant_attributes || [];
+  const combos = product.variant_combinations || [];
+  const hasVariants = attrs.length > 0;
+  
+  // Validate if all attributes have a selection
+  const allVariantsSelected = !hasVariants || attrs.every((a) => selectedVariants[a.id]);
+
+  // Find the matching combination based on selection
+  const activeCombination = React.useMemo(() => {
+    if (!allVariantsSelected) return null;
+    const selectedOptionIds = Object.values(selectedVariants);
+    return combos.find((c) => {
+      const comboOptionIds = c.options.map((o: any) => o.id);
+      return comboOptionIds.length === selectedOptionIds.length &&
+             comboOptionIds.every((id: string) => selectedOptionIds.includes(id));
+    });
+  }, [selectedVariants, allVariantsSelected, combos]);
+
+  const effectiveBasePrice = activeCombination
+    ? (activeCombination.absolute_price || product.base_price + (activeCombination.price_adjustment || 0))
+    : product.base_price;
 
   const minDownPayment = Math.ceil(effectiveBasePrice * (MIN_DOWN_PAYMENT_PCT / 100));
   const [customDownPayment, setCustomDownPayment] = React.useState<number | "">("");
@@ -61,7 +87,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
 
   const breakdown = calculateInstallment(effectiveBasePrice, selectedDuration, undefined, activeDownPayment);
   const allOptions = getAllInstallmentOptions(effectiveBasePrice, activeDownPayment);
-  const inStock = product.stock_qty > 0;
+  
+  const inStock = hasVariants
+    ? (activeCombination ? activeCombination.stock_qty > 0 : false)
+    : product.stock_qty > 0;
 
   const buyerParams = new URLSearchParams({
     product_id: product.id,
@@ -74,9 +103,12 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
     down_payment: String(breakdown.downPayment),
     monthly: String(breakdown.monthlyPayment),
     total: String(breakdown.totalPrice),
+    variant_id: activeCombination?.id || '',
+    variant_name: activeCombination?.options?.map((o: any) => o.value).join(", ") || '',
   }).toString();
 
   async function handleBuyNow() {
+    if (!allVariantsSelected) return;
     if (!inStock) return;
     router.push(`/checkout?${buyerParams}`);
   }
@@ -158,6 +190,36 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             {formatPKR(effectiveBasePrice)}
           </p>
 
+          {/* Variant Selectors */}
+          {hasVariants && (
+            <div className="mt-6 space-y-4">
+              {attrs.map((attr) => (
+                <div key={attr.id}>
+                  <h3 className="text-sm font-semibold mb-2">{attr.name}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {attr.options.map((opt: any) => {
+                      const isSelected = selectedVariants[attr.id] === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          onClick={() => setSelectedVariants(prev => ({ ...prev, [attr.id]: opt.id }))}
+                          className={cn(
+                            "px-4 py-2 text-sm rounded-md border font-medium transition-colors",
+                            isSelected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-input hover:border-primary/50 hover:bg-muted"
+                          )}
+                        >
+                          {opt.value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Installment Plan Selector */}
           <div className="mt-8">
             <h3 className="text-sm font-semibold mb-3">Choose your installment plan</h3>
@@ -167,7 +229,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                   key={d}
                   onClick={() => setSelectedDuration(d)}
                   className={cn(
-                    "px-3 py-2 rounded-md border text-sm font-medium transition-colors",
+                    "min-h-[44px] px-3 py-2 rounded-md border text-sm font-medium transition-colors",
                     d === selectedDuration
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-input hover:border-primary/50 hover:bg-muted"
@@ -179,21 +241,21 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             </div>
 
             <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex justify-between text-sm">
+              <CardContent className="p-4 space-y-5">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-muted-foreground">Duration</span>
                   <span className="font-medium">{selectedDuration} x {formatPKR(breakdown.monthlyPayment)}</span>
                 </div>
 
-                <div className="space-y-1 py-1">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Down Payment</span>
-                    <div className="flex items-center gap-1">
+                <div className="space-y-2 py-1">
+                  <div className="flex justify-between items-center text-sm sm:text-base gap-2">
+                    <span className="text-muted-foreground whitespace-nowrap">Down Payment</span>
+                    <div className="flex items-center gap-1 shrink-0">
                       <span className="text-xs text-muted-foreground font-mono">Rs</span>
                       <Input
                         type="number"
                         min={minDownPayment}
-                        className="h-8 w-28 text-right font-semibold text-foreground text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="min-h-[44px] text-[16px] sm:text-sm w-24 sm:w-28 text-right font-semibold text-foreground [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         value={customDownPayment === "" ? activeDownPayment : customDownPayment}
                         onChange={(e) => {
                           const val = e.target.value === "" ? "" : parseFloat(e.target.value);
@@ -217,10 +279,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             </Card>
 
             {/* All plans quick view */}
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="mt-4 overflow-x-auto w-full pb-2">
+              <table className="w-full text-sm min-w-[300px]">
                 <thead>
-                  <tr className="border-b border-border text-muted-foreground">
+                  <tr className="border-b border-border text-muted-foreground whitespace-nowrap">
                     <th className="text-left py-2 font-medium">Duration</th>
                     <th className="text-right py-2 font-medium">Total Installments</th>
                   </tr>
@@ -251,19 +313,21 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             <Button
               size="lg"
               className="w-full gap-2"
-              disabled={!inStock}
+              disabled={!inStock || !allVariantsSelected}
               onClick={handleBuyNow}
             >
               <ShoppingBag className="h-4 w-4" />
-              {inStock
-                ? `Buy on Installments — ${formatPKR(breakdown.monthlyPayment)}/mo`
-                : "Out of Stock"}
+              {!allVariantsSelected
+                ? "Select Options"
+                : inStock
+                  ? `Buy on Installments — ${formatPKR(breakdown.monthlyPayment)}/mo`
+                  : "Out of Stock"}
             </Button>
           </div>
 
-          {!inStock && (
+          {allVariantsSelected && !inStock && (
             <p className="text-sm text-destructive mt-2 text-center">
-              This product is currently out of stock.
+              This product combination is currently out of stock.
             </p>
           )}
 
@@ -373,16 +437,21 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
       )}
 
       {/* Mobile sticky CTA */}
-      <div className="fixed bottom-16 left-0 right-0 z-30 bg-background border-t border-border p-3 md:hidden">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <div className="fixed bottom-16 left-0 right-0 z-30 bg-background border-t border-border p-4 md:hidden shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+        <div className="flex items-center justify-between max-w-7xl mx-auto gap-4">
           <div>
             <p className="text-xs text-muted-foreground">
               {selectedDuration}mo · {formatPKR(breakdown.monthlyPayment)}/mo
             </p>
             <p className="text-sm font-bold text-primary">{formatPKR(breakdown.downPayment)} down</p>
           </div>
-          <Button size="lg" className="flex-1 ml-3" disabled={!inStock} onClick={handleBuyNow}>
-            Buy on Installments
+          <Button 
+            size="lg" 
+            className="flex-1 min-h-[44px]" 
+            disabled={!inStock || !allVariantsSelected} 
+            onClick={handleBuyNow}
+          >
+            {!allVariantsSelected ? "Select Options" : "Buy on Installments"}
           </Button>
         </div>
       </div>
