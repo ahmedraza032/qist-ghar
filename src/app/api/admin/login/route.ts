@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyAdminCredentials, setAdminSession } from "@/lib/helpers/admin-auth";
+import { verifyAdminCredentials, ADMIN_SESSION_COOKIE } from "@/lib/helpers/admin-auth";
 
 export async function POST(request: Request) {
   try {
@@ -10,8 +10,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    await setAdminSession(rememberMe === true);
-    return NextResponse.json({ success: true });
+    // Only send the cookie over HTTPS in production (Vercel), but allow
+    // plain HTTP when testing a production build locally.
+    const proto = request.headers.get("x-forwarded-proto");
+    const secure = proto ? proto === "https" : new URL(request.url).protocol === "https:";
+
+    const res = NextResponse.json({ success: true });
+    res.cookies.set(ADMIN_SESSION_COOKIE, "authenticated", {
+      httpOnly: true,
+      secure,
+      sameSite: "lax",
+      path: "/",
+      maxAge: rememberMe === true ? 60 * 60 * 24 * 30 : 60 * 60 * 24,
+    });
+
+    return res;
   } catch {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }

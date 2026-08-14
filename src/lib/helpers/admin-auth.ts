@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 
-const ADMIN_SESSION_COOKIE = "qistghar_admin_session";
+export const ADMIN_SESSION_COOKIE = "qistghar_admin_session";
 
 export async function verifyAdminCredentials(
   email: string,
@@ -19,17 +19,6 @@ export async function verifyAdminCredentials(
     return bcrypt.compareSync(password, adminPasswordHash);
   }
   return password === adminPasswordHash;
-}
-
-export async function setAdminSession(rememberMe?: boolean) {
-  const cookieStore = await cookies();
-  cookieStore.set(ADMIN_SESSION_COOKIE, "authenticated", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24, // 30 days or 24 hours
-  });
 }
 
 export async function clearAdminSession() {

@@ -60,6 +60,7 @@ CREATE TABLE orders (
   customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
   product_id UUID NOT NULL REFERENCES products(id),
   plan_id UUID NOT NULL REFERENCES installment_plans(id),
+  variant_combination_id UUID REFERENCES product_variant_combinations(id) ON DELETE SET NULL,
   status order_status NOT NULL DEFAULT 'active',
   down_payment_amount INTEGER NOT NULL,
   monthly_amount INTEGER NOT NULL,
