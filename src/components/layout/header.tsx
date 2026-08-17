@@ -24,20 +24,23 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative py-2",
-                pathname === link.href
-                  ? "text-primary after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary"
-                  : "text-text-secondary"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-primary relative py-2",
+                  isActive
+                    ? "text-primary after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-primary"
+                    : "text-text-secondary"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <button
@@ -52,21 +55,24 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="flex flex-col p-4 gap-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium",
-                  pathname === link.href
-                    ? "bg-primary-subtle text-primary border-l-2 border-primary"
-                    : "text-text-secondary hover:bg-surface-alt"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "px-3 py-2 rounded-md text-sm font-medium",
+                    isActive
+                      ? "bg-primary-subtle text-primary border-l-2 border-primary"
+                      : "text-text-secondary hover:bg-surface-alt"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
         </div>
       )}
