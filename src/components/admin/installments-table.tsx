@@ -6,11 +6,10 @@ import { Search, ChevronLeft, ChevronRight, Check, Filter } from "lucide-react";
 import { formatPKR, formatDate } from "@/lib/helpers/format";
 import { deriveInstallmentStatus } from "@/lib/helpers/installments";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { RecordPaymentButton } from "@/components/admin/record-payment-button";
 import { cn } from "@/lib/utils";
+import { SearchInput, TableRow, TableHeader, AnimatedStatusBadge } from "@/components/admin/shared/admin-interactions";
 
 const FILTERS = [
   { value: "due", label: "Due (Pending / Partial)" },
@@ -93,12 +92,10 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
           showFilters ? "flex" : "hidden sm:flex"
         )}>
           <div className="relative flex-1 w-full sm:w-auto min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+            <SearchInput
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={setQuery}
               placeholder="Search by customer, product, or order #..."
-              className="pl-9 w-full min-h-[44px] sm:h-10"
             />
           </div>
           <select
@@ -145,20 +142,20 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
               <table className="w-full text-sm table-fixed min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground text-left">
-                    <th className="py-2.5 px-3 font-medium w-24">Order #</th>
-                    <th className="py-2.5 px-3 font-medium">Customer</th>
-                    <th className="py-2.5 px-3 font-medium w-44">Product</th>
-                    <th className="py-2.5 px-3 font-medium w-28">Due Date</th>
-                    <th className="py-2.5 px-3 font-medium text-right w-28">Amount</th>
-                    <th className="py-2.5 px-3 font-medium text-right w-24">Paid</th>
-                    <th className="py-2.5 px-3 font-medium text-right w-28">Remaining</th>
-                    <th className="py-2.5 px-3 font-medium text-right w-24">Status</th>
-                    <th className="py-2.5 px-3 font-medium text-right w-28">Action</th>
+                    <TableHeader className="w-24">Order #</TableHeader>
+                    <TableHeader>Customer</TableHeader>
+                    <TableHeader className="w-44">Product</TableHeader>
+                    <TableHeader className="w-28">Due Date</TableHeader>
+                    <TableHeader className="text-right w-28">Amount</TableHeader>
+                    <TableHeader className="text-right w-24">Paid</TableHeader>
+                    <TableHeader className="text-right w-28">Remaining</TableHeader>
+                    <TableHeader className="text-right w-24">Status</TableHeader>
+                    <TableHeader className="text-right w-28">Action</TableHeader>
                   </tr>
                 </thead>
                 <tbody>
                   {paged.map((inst: any) => (
-                    <tr key={inst.id} className="border-b border-border hover:bg-muted/30">
+                    <TableRow key={inst.id}>
                       <td className="py-2.5 px-3 text-sm">
                         <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
                           {inst.order?.id ? `#${inst.order.id.slice(0, 8)}` : "—"}
@@ -183,7 +180,9 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                         {formatPKR(inst.remaining)}
                       </td>
                       <td className="py-2.5 px-3 text-right">
-                        <Badge
+                        <AnimatedStatusBadge
+                          status={inst.derivedStatus}
+                          isPositiveState={inst.derivedStatus === "paid"}
                           variant={
                             inst.derivedStatus === "paid"
                               ? "success"
@@ -193,9 +192,7 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                               ? "outline"
                               : "warning"
                           }
-                        >
-                          {inst.derivedStatus}
-                        </Badge>
+                        />
                       </td>
                       <td className="py-2.5 px-3 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -212,7 +209,7 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                           )}
                         </div>
                       </td>
-                    </tr>
+                    </TableRow>
                   ))}
                 </tbody>
               </table>
@@ -231,7 +228,9 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="text-xs text-muted-foreground font-medium mb-1">Status</span>
-                      <Badge
+                      <AnimatedStatusBadge
+                        status={inst.derivedStatus}
+                        isPositiveState={inst.derivedStatus === "paid"}
                         variant={
                           inst.derivedStatus === "paid"
                             ? "success"
@@ -241,10 +240,7 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                             ? "outline"
                             : "warning"
                         }
-                        className="text-xs px-1.5 py-0.5"
-                      >
-                        {inst.derivedStatus}
-                      </Badge>
+                      />
                     </div>
                   </div>
                   <CardContent className="p-4 space-y-3">

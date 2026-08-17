@@ -22,15 +22,15 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-muted/30">
+    <footer className="border-t border-border bg-bg-tinted">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           <div>
             <Link href="/" className="flex items-center gap-2 font-bold text-xl">
               <span className="text-primary">Qist</span>
-              <span>Ghar</span>
+              <span className="text-text-primary">Ghar</span>
             </Link>
-            <p className="text-sm text-muted-foreground mt-2 max-w-xs">
+            <p className="text-sm text-text-secondary mt-2 max-w-xs">
               Buy phones and electronics on easy installments. Pay monthly with JazzCash, Easypaisa, or bank transfer.
             </p>
           </div>
@@ -39,10 +39,10 @@ export function Footer() {
               <h4 className="text-sm font-semibold mb-3">{title}</h4>
               <ul className="space-y-2">
                 {links.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-sm text-text-secondary hover:text-text-primary transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -53,11 +53,11 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-8 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-text-secondary">
             &copy; {new Date().getFullYear()} QistGhar. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-muted-foreground">Accepted payments:</span>
+            <span className="text-xs text-text-secondary">Accepted payments:</span>
             <div className="flex items-center gap-3">
               <div className="h-6 px-2 rounded bg-[#E31B23] flex items-center justify-center text-white text-xs font-bold">JazzCash</div>
               <div className="h-6 px-2 rounded bg-[#07A800] flex items-center justify-center text-white text-xs font-bold">Easypaisa</div>

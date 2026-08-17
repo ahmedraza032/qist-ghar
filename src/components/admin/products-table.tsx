@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchInput, TableRow, TableHeader, AnimatedStatusBadge, IconActionButton } from "@/components/admin/shared/admin-interactions";
 
 const PAGE_SIZE = 30;
 
@@ -57,15 +57,11 @@ export function ProductsTable({
 
   return (
     <div className="space-y-4">
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search products by name, brand, or category..."
-          className="pl-9"
-        />
-      </div>
+      <SearchInput
+        value={query}
+        onChange={handleSearch}
+        placeholder="Search products by name, brand, or category..."
+      />
 
       {filtered.length === 0 ? (
         <div className="rounded-lg border border-border">
@@ -79,17 +75,17 @@ export function ProductsTable({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50 text-muted-foreground">
-                  <th className="text-left py-3 px-4 font-medium">Product</th>
-                  <th className="text-left py-3 px-4 font-medium">Category</th>
-                  <th className="text-right py-3 px-4 font-medium">Price</th>
-                  <th className="text-center py-3 px-4 font-medium">Sold</th>
-                  <th className="text-center py-3 px-4 font-medium">Status</th>
-                  <th className="text-right py-3 px-4 font-medium">Actions</th>
+                  <TableHeader>Product</TableHeader>
+                  <TableHeader>Category</TableHeader>
+                  <TableHeader className="text-right">Price</TableHeader>
+                  <TableHeader className="text-center">Sold</TableHeader>
+                  <TableHeader className="text-center">Status</TableHeader>
+                  <TableHeader className="text-right">Actions</TableHeader>
                 </tr>
               </thead>
               <tbody>
                 {paged.map((product: any) => (
-                  <tr key={product.id} className="border-b border-border hover:bg-muted/30">
+                  <TableRow key={product.id}>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded bg-muted shrink-0 overflow-hidden">
@@ -109,24 +105,26 @@ export function ProductsTable({
                     <td className="py-3 px-4 text-right font-medium">
                       {formatPKR(product.base_price)}
                     </td>
-                  <td className="py-3 px-4 text-center">
-                    {soldByProduct?.[product.id] ?? 0}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <Badge variant={product.is_published ? "success" : "secondary"}>
-                      {product.is_published ? "Published" : "Draft"}
-                    </Badge>
-                  </td>
+                    <td className="py-3 px-4 text-center">
+                      {soldByProduct?.[product.id] ?? 0}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <AnimatedStatusBadge 
+                        status={product.is_published ? "Published" : "Draft"} 
+                        variant={product.is_published ? "success" : "secondary"} 
+                        isPositiveState={product.is_published}
+                      />
+                    </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Link href={`/admin/products/${product.id}`}>
-                          <Button variant="ghost" size="icon">
+                          <IconActionButton>
                             <Pencil className="h-4 w-4" />
-                          </Button>
+                          </IconActionButton>
                         </Link>
                       </div>
                     </td>
-                  </tr>
+                  </TableRow>
                 ))}
               </tbody>
             </table>
