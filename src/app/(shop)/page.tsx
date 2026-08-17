@@ -311,7 +311,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-bg">
+      <section className="pt-16 pb-8 bg-bg">
         <div className="max-w-7xl mx-auto px-4">
           <div className="relative overflow-hidden bg-[#0A0D11] rounded-[var(--radius-card)] p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-[var(--shadow-md)] border border-secondary/20">
             {/* Subtle green gradient glow */}
@@ -342,7 +342,7 @@ export default function HomePage() {
       </section>
 
       {/* FAQs */}
-      <section className="bg-bg border-y border-border py-16">
+      <section className="bg-bg pb-16 pt-8">
         <div className="max-w-3xl mx-auto px-4">
           <AnimatedFAQ />
         </div>
