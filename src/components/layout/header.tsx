@@ -20,7 +20,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.png" alt="QistGhar Logo" width={300} height={100} className="h-9 md:h-11 w-auto object-contain mix-blend-multiply" quality={100} priority />
+          <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[44px] w-auto object-contain mix-blend-multiply" quality={100} priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">

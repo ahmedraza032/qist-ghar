@@ -39,7 +39,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex flex-col w-64 bg-background border-r border-border fixed inset-y-0">
         <div className="flex items-center h-16 px-6 border-b border-border">
           <Link href="/admin" className="font-bold text-lg flex items-center">
-            <Image src="/logo.png" alt="QistGhar Logo" width={300} height={100} className="h-9 md:h-10 w-auto object-contain mix-blend-multiply" quality={100} />
+            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[40px] w-auto object-contain mix-blend-multiply" quality={100} />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -103,7 +103,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
           <Link href="/admin" className="font-bold text-lg flex items-center">
-            <Image src="/logo.png" alt="QistGhar Logo" width={300} height={100} className="h-9 w-auto object-contain mix-blend-multiply" quality={100} />
+            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 w-auto object-contain mix-blend-multiply" quality={100} />
           </Link>
           <button onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/admin" className="ml-3 font-bold text-lg flex items-center">
-            <Image src="/logo.png" alt="QistGhar Logo" width={300} height={100} className="h-9 w-auto object-contain mix-blend-multiply" quality={100} />
+            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 w-auto object-contain mix-blend-multiply" quality={100} />
           </Link>
         </div>
         <main className="p-4 md:p-6 lg:p-8">{children}</main>
