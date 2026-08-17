@@ -313,25 +313,22 @@ export default function HomePage() {
       {/* CTA */}
       <section className="pt-16 pb-8 bg-bg">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="relative overflow-hidden bg-[#0A0D11] rounded-[var(--radius-card)] p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-[var(--shadow-md)] border border-secondary/20">
-            {/* Subtle green gradient glow */}
-            <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="max-w-xl relative z-10">
-              <h2 className="font-heading text-3xl md:text-4xl font-semibold text-white">
+          <div className="bg-secondary rounded-[var(--radius-card)] p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-[var(--shadow-md)]">
+            <div className="max-w-xl">
+              <h2 className="font-heading text-3xl md:text-4xl font-semibold text-text-primary">
                 Ready to start buying on installments?
               </h2>
-              <p className="mt-4 text-white/80 text-lg">
+              <p className="mt-4 text-text-primary/90 text-lg">
                 No credit card required. No hidden fees. Just pick a product, choose
                 a plan, and pay monthly.
               </p>
             </div>
-            <Link href="/products" className="shrink-0 relative z-10">
+            <Link href="/products" className="shrink-0">
               <Button
                 size="lg"
-                className="gap-2 bg-white text-[#0A0D11] hover:bg-gray-100 rounded-[var(--radius-control)] border-none font-medium h-12 px-8
+                className="gap-2 bg-text-primary text-white hover:bg-[#0A0D11] rounded-[var(--radius-control)] border-none font-medium h-12 px-8
                   transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)]
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0D11]
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
                   active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none"
               >
                 Shop Now <ArrowRight className="h-4 w-4" />
