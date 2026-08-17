@@ -155,14 +155,12 @@ export function ProductListingClient({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <motion.h1 
-            className="font-heading text-3xl font-semibold text-primary cursor-default"
-            initial="initial"
-            whileHover="hover"
+          <motion.h1
+            className="font-heading text-3xl font-semibold bg-gradient-to-r from-text-primary via-primary to-text-primary bg-[length:200%_auto] text-transparent bg-clip-text inline-block"
+            animate={{ backgroundPosition: ["200% center", "-200% center"] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
           >
-            <TextShimmerWave zDistance={2} yDistance={-2} rotateYDistance={10} spread={1.5}>
-              Products
-            </TextShimmerWave>
+            Products
           </motion.h1>
           <p className="text-text-secondary mt-1 text-sm">
             {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""} available
