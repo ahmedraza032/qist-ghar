@@ -39,7 +39,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex flex-col w-64 bg-background border-r border-border fixed inset-y-0">
         <div className="flex items-center h-16 px-6 border-b border-border">
           <Link href="/admin" className="font-bold text-lg flex items-center">
-            <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="w-[120px] md:w-[150px] h-auto object-contain scale-[1.8] origin-left" />
+            <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="h-10 w-auto object-contain mix-blend-multiply" />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -103,7 +103,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
           <Link href="/admin" className="font-bold text-lg flex items-center">
-            <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="w-[120px] md:w-[150px] h-auto object-contain scale-[1.8] origin-left" />
+            <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="h-10 w-auto object-contain mix-blend-multiply" />
           </Link>
           <button onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/admin" className="ml-3 font-bold text-lg flex items-center">
-            <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="w-[120px] h-auto object-contain scale-[1.8] origin-left" />
+            <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="h-10 w-auto object-contain mix-blend-multiply" />
           </Link>
         </div>
         <main className="p-4 md:p-6 lg:p-8">{children}</main>
