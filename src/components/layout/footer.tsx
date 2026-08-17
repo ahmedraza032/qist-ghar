@@ -28,7 +28,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           <div>
             <Link href="/" className="flex items-center">
-              <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="h-10 w-auto object-contain mix-blend-multiply" />
+              <Image src="/logo.png" alt="QistGhar Logo" width={300} height={100} className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" quality={100} />
             </Link>
             <p className="text-sm text-text-secondary mt-2 max-w-xs">
               Buy phones and electronics on easy installments. Pay monthly with JazzCash, Easypaisa, or bank transfer.
