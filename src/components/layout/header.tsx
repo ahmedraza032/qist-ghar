@@ -20,7 +20,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.png" alt="QistGhar Logo" width={150} height={50} className="h-10 w-auto object-contain" priority />
+          <Image src="/logo.png" alt="QistGhar Logo" width={200} height={80} className="w-[120px] md:w-[150px] h-auto object-contain scale-[1.8] origin-left" priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
