@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { motion, AnimatePresence } from "motion/react";
+import Image from "next/image";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -37,8 +38,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar — desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-background border-r border-border fixed inset-y-0">
         <div className="flex items-center h-16 px-6 border-b border-border">
-          <Link href="/admin" className="font-bold text-lg">
-            <span className="text-primary">Qist</span>Ghar Admin
+          <Link href="/admin" className="font-bold text-lg flex items-center">
+            <Image src="/logo.png" alt="QistGhar Logo" width={120} height={40} className="h-8 w-auto object-contain" />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -101,8 +102,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-          <Link href="/admin" className="font-bold text-lg">
-            <span className="text-primary">Qist</span>Ghar Admin
+          <Link href="/admin" className="font-bold text-lg flex items-center">
+            <Image src="/logo.png" alt="QistGhar Logo" width={120} height={40} className="h-8 w-auto object-contain" />
           </Link>
           <button onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />

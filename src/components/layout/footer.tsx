@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const footerLinks = {
   Shop: [
@@ -26,9 +27,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           <div>
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-              <span className="text-primary">Qist</span>
-              <span className="text-text-primary">Ghar</span>
+            <Link href="/" className="flex items-center">
+              <Image src="/logo.png" alt="QistGhar Logo" width={150} height={50} className="h-10 w-auto object-contain" />
             </Link>
             <p className="text-sm text-text-secondary mt-2 max-w-xs">
               Buy phones and electronics on easy installments. Pay monthly with JazzCash, Easypaisa, or bank transfer.

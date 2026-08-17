@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,9 +19,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
-          <span className="text-primary">Qist</span>
-          <span className="text-text-primary">Ghar</span>
+        <Link href="/" className="flex items-center">
+          <Image src="/logo.png" alt="QistGhar Logo" width={150} height={50} className="h-10 w-auto object-contain" priority />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
