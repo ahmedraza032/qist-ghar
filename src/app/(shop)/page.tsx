@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Percent, RotateCcw, Search, CalendarDays, Wallet, ChevronDown } from "lucide-react";
+import { ArrowRight, ShieldCheck, Percent, RotateCcw, Search, CalendarDays, Wallet, ChevronRight, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 import { AnimatedFAQ } from "@/components/shop/animated-faq";
 import { HeroMockup } from "@/components/shop/hero-mockup";
