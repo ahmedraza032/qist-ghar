@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck, Percent, RotateCcw, Smartphone, Laptop, Tv, Home, Headphones, Search, CalendarDays, Wallet, ChevronRight, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 import { AnimatedFAQ } from "@/components/shop/animated-faq";
-import { InfiniteSlider } from "@/components/shop/infinite-slider";
+import { HeroMockup } from "@/components/shop/hero-mockup";
 
 const categories = [
   { name: "Smartphones", slug: "smartphones", icon: Smartphone },
@@ -16,7 +16,6 @@ const categories = [
   { name: "Accessories", slug: "accessories", icon: Headphones },
 ];
 
-const BRANDS = ["Apple", "Samsung", "Dawlance", "Haier", "Oppo", "Vivo", "TCL", "Infinix", "Xiaomi", "Dell", "HP"];
 
 const steps = [
   {
@@ -58,77 +57,72 @@ export default function HomePage() {
       {/* Hero */}
       <section className="min-h-[80vh] flex items-center bg-bg relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 w-full relative z-10">
-          <div className="max-w-2xl">
-            <h1 className="font-heading text-[34px] leading-[40px] md:text-[48px] md:leading-[56px] font-semibold text-text-primary">
-              Buy Now, Pay in{" "}
-              <span className="relative inline-block">
-                <motion.span
-                  className="inline-block bg-gradient-to-r from-text-primary via-primary to-text-primary bg-[length:200%_auto] text-transparent bg-clip-text"
-                  animate={{ backgroundPosition: ["200% center", "-200% center"] }}
-                  transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                >
-                  Easy Installments
-                </motion.span>
-                <svg
-                  className="absolute -bottom-2 left-0 w-full h-[14px] overflow-visible pointer-events-none"
-                  viewBox="0 0 300 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M2,10 Q60,-2 130,8 T298,6"
-                    stroke="var(--color-secondary-text)"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    fill="transparent"
-                    style={{
-                      strokeDasharray: 320,
-                      strokeDashoffset: mounted ? 0 : 320,
-                      transition: "stroke-dashoffset 600ms cubic-bezier(0.25, 1, 0.5, 1) 100ms"
-                    }}
-                    className="motion-reduce:transition-none motion-reduce:stroke-dashoffset-0"
-                  />
-                </svg>
-              </span>
-            </h1>
-            <p className="mt-6 text-lg text-text-secondary max-w-lg">
-              Get phones, laptops, TVs, and appliances delivered to your door.
-              Pay monthly with JazzCash, Easypaisa, or bank transfer.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Link href="/products">
-                <Button 
-                  size="lg" 
-                  className="gap-2 bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] border-none"
-                >
-                  Browse Products <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/products">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="bg-transparent border-[1.5px] border-border-strong text-text-primary hover:border-primary hover:bg-primary-subtle hover:text-primary rounded-[var(--radius-control)] transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)]"
-                >
-                  View Installment Plans
-                </Button>
-              </Link>
+          <div className="flex flex-col md:flex-row items-center gap-12 md:gap-8 lg:gap-16">
+            {/* Left: Text + CTAs — unchanged */}
+            <div className="flex-1 max-w-xl">
+              <h1 className="font-heading text-[34px] leading-[40px] md:text-[48px] md:leading-[56px] font-semibold text-text-primary">
+                Buy Now, Pay in{" "}
+                <span className="relative inline-block">
+                  <motion.span
+                    className="inline-block bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] text-transparent bg-clip-text"
+                    animate={{ backgroundPosition: ["200% center", "-200% center"] }}
+                    transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                  >
+                    Easy Installments
+                  </motion.span>
+                  <svg
+                    className="absolute -bottom-2 left-0 w-full h-[14px] overflow-visible pointer-events-none"
+                    viewBox="0 0 300 14"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    preserveAspectRatio="none"
+                  >
+                    <path
+                      d="M2,10 Q60,-2 130,8 T298,6"
+                      stroke="var(--color-secondary-text)"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      fill="transparent"
+                      style={{
+                        strokeDasharray: 320,
+                        strokeDashoffset: mounted ? 0 : 320,
+                        transition: "stroke-dashoffset 600ms cubic-bezier(0.25, 1, 0.5, 1) 100ms"
+                      }}
+                      className="motion-reduce:transition-none motion-reduce:stroke-dashoffset-0"
+                    />
+                  </svg>
+                </span>
+              </h1>
+              <p className="mt-6 text-lg text-text-secondary max-w-lg">
+                Get phones, laptops, TVs, and appliances delivered to your door.
+                Pay monthly with JazzCash, Easypaisa, or bank transfer.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <Link href="/products">
+                  <Button 
+                    size="lg" 
+                    className="gap-2 bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] border-none"
+                  >
+                    Browse Products <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/products">
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    className="bg-transparent border-[1.5px] border-border-strong text-text-primary hover:border-primary hover:bg-primary-subtle hover:text-primary rounded-[var(--radius-control)] transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)]"
+                  >
+                    View Installment Plans
+                  </Button>
+                </Link>
+              </div>
             </div>
+
+            <HeroMockup />
           </div>
         </div>
       </section>
 
-      {/* Infinite Brands Slider */}
-      <section className="bg-bg py-8 overflow-hidden border-t border-border/50">
-        <InfiniteSlider>
-          {BRANDS.map((brand, idx) => (
-            <span key={idx} className="font-heading font-bold text-2xl md:text-3xl text-text-tertiary/40 uppercase tracking-widest">
-              {brand}
-            </span>
-          ))}
-        </InfiniteSlider>
-      </section>
 
       {/* Featured Categories */}
       <section className="bg-bg-tinted py-16 border-t border-border overflow-hidden">
@@ -138,29 +132,10 @@ export default function HomePage() {
           </h2>
           <motion.div 
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.05 },
-              },
-            }}
           >
             {categories.map((cat) => (
               <motion.div
                 key={cat.slug}
-                variants={{
-                  hidden: { opacity: 0, y: 30, filter: 'blur(4px)' },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    filter: 'blur(0px)',
-                    transition: { duration: 0.8, type: 'spring', bounce: 0.3 },
-                  },
-                }}
               >
                 <Link
                   href={`/products?category=${cat.slug}`}
@@ -189,42 +164,26 @@ export default function HomePage() {
           </h2>
           <motion.div 
             className="flex flex-col md:flex-row items-stretch gap-6 md:gap-8 relative"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.15 },
-              },
-            }}
           >
             {steps.map((s, idx) => (
               <motion.div 
                 key={s.step}
                 className="flex-1 relative"
-                variants={{
-                  hidden: { opacity: 0, y: 30, filter: 'blur(4px)' },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    filter: 'blur(0px)',
-                    transition: { duration: 0.8, type: 'spring', bounce: 0.3 },
-                  },
-                }}
               >
                 {(() => {
                   const content = (
                     <>
-                      <div className="absolute top-4 left-5 text-[14px] font-heading font-semibold text-text-tertiary/40 tracking-wider">
+                      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-[var(--radius-card)]">
+                         <div className="absolute top-0 bottom-0 -left-full w-full bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.6)_50%,transparent_70%)] group-hover:animate-shimmer-sweep motion-reduce:hidden" />
+                      </div>
+                      <div className="absolute top-4 left-5 text-[14px] font-heading font-semibold text-text-tertiary/40 tracking-wider z-10">
                         {s.step}
                       </div>
-                      <div className="category-card-icon-wrapper mt-4">
+                      <div className="category-card-icon-wrapper mt-4 z-10">
                         <div className="category-card-icon-bg motion-reduce:transition-none" />
                         <s.icon className="category-card-icon h-7 w-7" />
                       </div>
-                      <div className="mt-5">
+                      <div className="mt-5 relative z-10">
                         <h3 className="font-heading text-lg font-semibold text-text-primary">{s.title}</h3>
                         <p className="mt-2 text-[15px] text-text-secondary leading-relaxed">
                           {s.desc}
@@ -232,6 +191,46 @@ export default function HomePage() {
                       </div>
                     </>
                   );
+
+                  if (s.step === "01") {
+                    return (
+                      <div 
+                        className="group category-card h-full text-center justify-center pt-8 pb-10 cursor-pointer active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none block relative"
+                        onClick={() => {
+                          const form = document.getElementById('search-step-form');
+                          if (form) {
+                            form.classList.remove('hidden');
+                            form.classList.add('flex');
+                            const input = form.querySelector('input');
+                            if (input) input.focus();
+                          }
+                        }}
+                      >
+                        {content}
+                        <form 
+                          id="search-step-form"
+                          action="/products" 
+                          className="absolute inset-0 bg-surface rounded-[var(--radius-card)] hidden flex-col items-center justify-center p-6 z-30"
+                        >
+                          <input 
+                            name="q" 
+                            placeholder="What are you looking for?" 
+                            className="w-full text-center text-lg border-b-2 border-primary bg-transparent focus:outline-none pb-2 text-text-primary"
+                            onBlur={(e) => {
+                              if (!e.target.value) {
+                                const form = document.getElementById('search-step-form');
+                                if (form) {
+                                  form.classList.add('hidden');
+                                  form.classList.remove('flex');
+                                }
+                              }
+                            }}
+                          />
+                          <button type="submit" className="mt-4 text-sm text-primary font-medium hover:underline">Search</button>
+                        </form>
+                      </div>
+                    );
+                  }
 
                   return s.href ? (
                     <Link 
@@ -274,29 +273,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <motion.div 
             className="flex flex-col md:flex-row justify-center items-stretch gap-6 md:gap-12"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.08 },
-              },
-            }}
           >
           {trustBadges.map((badge) => (
             <motion.div 
               key={badge.label} 
               className="flex-1 border border-border rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-xs)] p-6"
-              variants={{
-                hidden: { opacity: 0, y: 8 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: { duration: 0.2, ease: [0, 0, 0.2, 1] },
-                },
-              }}
             >
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="w-12 h-12 rounded-full bg-primary-subtle flex items-center justify-center mb-2">

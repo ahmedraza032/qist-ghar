@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const footerLinks = {
   Shop: [
@@ -14,20 +17,31 @@ const footerLinks = {
     { href: "#", label: "Contact" },
   ],
   Company: [
-    { href: "#", label: "About Us" },
-    { href: "#", label: "Contact" },
-    { href: "#", label: "Terms of Service" },
-    { href: "#", label: "Privacy Policy" },
+    { href: "/about", label: "About Us" },
+    { href: "/contact", label: "Contact" },
+    { href: "/terms", label: "Terms of Service" },
+    { href: "/privacy", label: "Privacy Policy" },
   ],
 };
 
 export function Footer() {
+  const pathname = usePathname();
+
   return (
     <footer className="border-t border-border bg-bg-tinted">
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           <div>
-            <Link href="/" className="flex items-center">
+            <Link 
+              href="/" 
+              className="flex items-center"
+              onClick={(e) => {
+                if (pathname === "/") {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+            >
               <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[48px] w-auto object-contain mix-blend-multiply" quality={100} />
             </Link>
             <p className="text-sm text-text-secondary mt-2 max-w-xs">

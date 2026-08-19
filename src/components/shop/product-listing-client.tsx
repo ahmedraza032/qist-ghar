@@ -67,6 +67,17 @@ export function ProductListingClient({
   });
   const [showFilters, setShowFilters] = React.useState(false);
 
+  React.useEffect(() => {
+    setSearch(searchParams.get("q") || "");
+    setSelectedCategory(searchParams.get("category") || "");
+    setSelectedBrand(searchParams.get("brand") || "");
+    setSortBy(searchParams.get("sort") || "newest");
+    setPriceRange({
+      min: searchParams.get("min_price") || "",
+      max: searchParams.get("max_price") || "",
+    });
+  }, [searchParams]);
+
   const filteredProducts = React.useMemo(() => {
     let result = [...products];
 
@@ -80,9 +91,15 @@ export function ProductListingClient({
     }
 
     if (selectedCategory) {
-      result = result.filter(
-        (p) => p.category?.slug === selectedCategory
-      );
+      if (selectedCategory === "home-appliances") {
+        result = result.filter(
+          (p) => ["air-conditioners", "washing-machines"].includes(p.category?.slug || "")
+        );
+      } else {
+        result = result.filter(
+          (p) => p.category?.slug === selectedCategory
+        );
+      }
     }
 
     if (selectedBrand) {
@@ -126,7 +143,7 @@ export function ProductListingClient({
   const activeFilters = [
     selectedCategory && {
       key: "category",
-      label: categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory,
+      label: selectedCategory === "home-appliances" ? "Home Appliances" : (categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory),
     },
     selectedBrand && {
       key: "brand",
@@ -156,7 +173,7 @@ export function ProductListingClient({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <motion.h1
-            className="font-heading text-3xl font-semibold bg-gradient-to-r from-text-primary via-primary to-text-primary bg-[length:200%_auto] text-transparent bg-clip-text inline-block"
+            className="font-heading text-3xl font-semibold bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] text-transparent bg-clip-text inline-block"
             animate={{ backgroundPosition: ["200% center", "-200% center"] }}
             transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
           >
@@ -196,8 +213,28 @@ export function ProductListingClient({
           )}
         </Button>
 
+        {/* Price Range */}
+        <div className="hidden md:flex items-center gap-2 ml-auto mr-1">
+          <span className="text-sm font-medium text-text-secondary mr-1">Price (PKR)</span>
+          <Input
+            placeholder="Min"
+            type="number"
+            value={priceRange.min}
+            onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))}
+            className="h-9 w-20 bg-surface border-border rounded-[var(--radius-control)] text-sm focus-visible:ring-2 focus-visible:ring-primary text-text-primary placeholder:text-text-tertiary"
+          />
+          <span className="text-text-tertiary">-</span>
+          <Input
+            placeholder="Max"
+            type="number"
+            value={priceRange.max}
+            onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))}
+            className="h-9 w-20 bg-surface border-border rounded-[var(--radius-control)] text-sm focus-visible:ring-2 focus-visible:ring-primary text-text-primary placeholder:text-text-tertiary"
+          />
+        </div>
+
         {/* Sort */}
-        <div className="relative ml-auto">
+        <div className="relative">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
@@ -267,7 +304,7 @@ export function ProductListingClient({
                 <button
                   onClick={() => setSelectedCategory("")}
                   className={cn(
-                    "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                    "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                     !selectedCategory
                       ? "bg-primary-subtle text-primary font-medium"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
@@ -280,7 +317,7 @@ export function ProductListingClient({
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.slug)}
                     className={cn(
-                      "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                      "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                       selectedCategory === cat.slug
                         ? "bg-primary-subtle text-primary font-medium"
                         : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
@@ -299,7 +336,7 @@ export function ProductListingClient({
                 <button
                   onClick={() => setSelectedBrand("")}
                   className={cn(
-                    "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                    "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                     !selectedBrand
                       ? "bg-primary-subtle text-primary font-medium"
                       : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
@@ -312,7 +349,7 @@ export function ProductListingClient({
                     key={brand.id}
                     onClick={() => setSelectedBrand(brand.name)}
                     className={cn(
-                      "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                      "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                       selectedBrand === brand.name
                         ? "bg-primary-subtle text-primary font-medium"
                         : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
@@ -324,30 +361,7 @@ export function ProductListingClient({
               </div>
             </div>
 
-            {/* Price Range */}
-            <div>
-              <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Price Range (PKR)</h3>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Min"
-                  type="number"
-                  value={priceRange.min}
-                  onChange={(e) =>
-                    setPriceRange((p) => ({ ...p, min: e.target.value }))
-                  }
-                  className="h-9 bg-surface border-border rounded-[var(--radius-control)] focus-visible:ring-2 focus-visible:ring-primary text-text-primary"
-                />
-                <Input
-                  placeholder="Max"
-                  type="number"
-                  value={priceRange.max}
-                  onChange={(e) =>
-                    setPriceRange((p) => ({ ...p, max: e.target.value }))
-                  }
-                  className="h-9 bg-surface border-border rounded-[var(--radius-control)] focus-visible:ring-2 focus-visible:ring-primary text-text-primary"
-                />
-              </div>
-            </div>
+            {/* Price Range moved to toolbar */}
           </div>
         </aside>
 
@@ -371,7 +385,7 @@ export function ProductListingClient({
                     <button
                       onClick={() => { setSelectedCategory(""); setShowFilters(false); }}
                       className={cn(
-                        "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                        "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                         !selectedCategory ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                       )}
                     >
@@ -382,7 +396,7 @@ export function ProductListingClient({
                         key={cat.id}
                         onClick={() => { setSelectedCategory(cat.slug); setShowFilters(false); }}
                         className={cn(
-                          "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                          "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                           selectedCategory === cat.slug ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                         )}
                       >
@@ -397,7 +411,7 @@ export function ProductListingClient({
                     <button
                       onClick={() => { setSelectedBrand(""); setShowFilters(false); }}
                       className={cn(
-                        "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                        "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                         !selectedBrand ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                       )}
                     >
@@ -443,10 +457,11 @@ export function ProductListingClient({
             />
           ) : view === "grid" ? (
             <motion.div 
+              key={`grid-${selectedCategory}-${search}-${sortBy}`}
               className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+              viewport={{ once: true, amount: 0.1 }}
               variants={{
                 hidden: { opacity: 0 },
                 visible: {
@@ -474,10 +489,11 @@ export function ProductListingClient({
             </motion.div>
           ) : (
             <motion.div 
+              key={`list-${selectedCategory}-${search}-${sortBy}`}
               className="space-y-4"
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+              viewport={{ once: true, amount: 0.1 }}
               variants={{
                 hidden: { opacity: 0 },
                 visible: {
