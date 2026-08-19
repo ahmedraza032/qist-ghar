@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: "QistGhar — Buy on Installments",
   description:
     "Pakistan's installment marketplace for phones and electronics. Pay monthly with JazzCash, Easypaisa, bank transfer, or card.",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({
