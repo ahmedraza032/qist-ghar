@@ -2,18 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ShieldCheck, Percent, RotateCcw, Smartphone, Laptop, Tv, Home, Headphones, Search, CalendarDays, Wallet, ChevronRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ShieldCheck, Percent, RotateCcw, Search, CalendarDays, Wallet, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 import { AnimatedFAQ } from "@/components/shop/animated-faq";
 import { HeroMockup } from "@/components/shop/hero-mockup";
 
 const categories = [
-  { name: "Smartphones", slug: "smartphones", icon: Smartphone },
-  { name: "Laptops", slug: "laptops", icon: Laptop },
-  { name: "TVs", slug: "tvs", icon: Tv },
-  { name: "Home Appliances", slug: "home-appliances", icon: Home },
-  { name: "Accessories", slug: "accessories", icon: Headphones },
+  { name: "Smartphones",    slug: "smartphones",    image: "/categories/smartphones.jpg" },
+  { name: "Laptops",        slug: "laptops",        image: "/categories/laptops.jpg" },
+  { name: "TVs",            slug: "tvs",            image: "/categories/tvs.jpg" },
+  { name: "Home Appliances",slug: "home-appliances",image: "/categories/home-appliances.jpg" },
+  { name: "Accessories",    slug: "accessories",    image: "/categories/accessories.jpg" },
 ];
 
 
@@ -130,29 +131,32 @@ export default function HomePage() {
           <h2 className="font-heading text-2xl md:text-3xl font-semibold mb-8 text-text-primary">
             Shop by Category
           </h2>
-          <motion.div 
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"
-          >
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {categories.map((cat) => (
-              <motion.div
+              <Link
                 key={cat.slug}
+                href={`/products?category=${cat.slug}`}
+                className="group relative block overflow-hidden rounded-[var(--radius-card)] aspect-[4/3] shadow-[var(--shadow-sm)] border border-border/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#205EA3] focus-visible:ring-offset-2"
+                aria-label={`Shop ${cat.name}`}
               >
-                <Link
-                  href={`/products?category=${cat.slug}`}
-                  className="group category-card active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none"
-                >
-                  <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-[var(--radius-card)]">
-                     <div className="absolute top-0 bottom-0 -left-full w-full bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.6)_50%,transparent_70%)] group-hover:animate-shimmer-sweep motion-reduce:hidden" />
-                  </div>
-                  <div className="category-card-icon-wrapper">
-                    <div className="category-card-icon-bg motion-reduce:transition-none" />
-                    <cat.icon className="category-card-icon" />
-                  </div>
-                  <span className="relative z-10 text-sm font-medium text-center text-text-primary">{cat.name}</span>
-                </Link>
-              </motion.div>
+                {/* Photo */}
+                <Image
+                  src={cat.image}
+                  alt={`Shop ${cat.name}`}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+                  loading="lazy"
+                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:group-hover:scale-100"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                {/* Label */}
+                <span className="absolute bottom-0 left-0 right-0 px-3 pb-3 pt-6 text-white font-semibold text-sm leading-tight drop-shadow-sm">
+                  {cat.name}
+                </span>
+              </Link>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 

@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { motion, AnimatePresence } from "motion/react";
-import Image from "next/image";
+import { Logo } from "@/components/ui/logo";
 
 const sidebarLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -39,7 +39,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:flex flex-col w-64 bg-background border-r border-border fixed inset-y-0">
         <div className="flex items-center h-16 px-6 border-b border-border">
           <Link href="/admin" className="font-bold text-lg flex items-center">
-            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[40px] w-auto object-contain mix-blend-multiply" quality={100} />
+            <Logo size="sm" />
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -103,7 +103,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-border">
           <Link href="/admin" className="font-bold text-lg flex items-center">
-            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 w-auto object-contain mix-blend-multiply" quality={100} />
+            <Logo size="sm" />
           </Link>
           <button onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </button>
           <Link href="/admin" className="ml-3 font-bold text-lg flex items-center">
-            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 w-auto object-contain mix-blend-multiply" quality={100} />
+            <Logo size="sm" />
           </Link>
         </div>
         <main className="p-4 md:p-6 lg:p-8">{children}</main>
