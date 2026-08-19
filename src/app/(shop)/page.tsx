@@ -41,9 +41,9 @@ const steps = [
 ];
 
 const trustBadges = [
-  { icon: ShieldCheck, label: "Secure Payments" },
-  { icon: Percent, label: "0% Hidden Fees" },
-  { icon: RotateCcw, label: "Easy Returns" },
+  { icon: ShieldCheck, label: "Secure Payments",  desc: "Every transaction is encrypted and processed securely.",  color: "#205EA3", ring: "rgba(32,94,163,0.18)",  bg: "rgba(32,94,163,0.05)",  glow: "rgba(32,94,163,0.12)"  },
+  { icon: Percent,     label: "0% Hidden Fees",   desc: "What you see is what you pay. No surprises, ever.",        color: "#82B63F", ring: "rgba(130,182,63,0.22)", bg: "rgba(130,182,63,0.05)", glow: "rgba(130,182,63,0.14)" },
+  { icon: RotateCcw,  label: "Easy Returns",      desc: "Hassle-free returns within 7 days of delivery.",          color: "#205EA3", ring: "rgba(32,94,163,0.18)",  bg: "rgba(32,94,163,0.05)",  glow: "rgba(32,94,163,0.12)"  },
 ];
 
 export default function HomePage() {
@@ -316,24 +316,61 @@ export default function HomePage() {
 
       {/* Trust Badges */}
       <section className="bg-bg-tinted py-16 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4">
-          <motion.div 
-            className="flex flex-col md:flex-row justify-center items-stretch gap-6 md:gap-12"
-          >
-          {trustBadges.map((badge) => (
-            <motion.div 
-              key={badge.label} 
-              className="flex-1 border border-border rounded-[var(--radius-card)] bg-surface shadow-[var(--shadow-xs)] p-6"
-            >
-              <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-12 h-12 rounded-full bg-primary-subtle flex items-center justify-center mb-2">
-                  <badge.icon className="h-6 w-6 text-primary" strokeWidth={2} />
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-center items-stretch gap-5">
+            {trustBadges.map((badge) => (
+              <div
+                key={badge.label}
+                className="flex-1 flex flex-col items-center text-center rounded-2xl border px-6 pt-10 pb-10 transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:transform-none"
+                style={{
+                  background: badge.bg,
+                  borderColor: badge.ring,
+                  boxShadow: `0 4px 24px ${badge.glow}`,
+                }}
+              >
+                {/* Ring icon badge */}
+                <div className="relative flex items-center justify-center mb-7 shrink-0">
+                  {/* Outer dashed ring */}
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      inset: "-10px",
+                      border: `1.5px dashed ${badge.color}`,
+                      opacity: 0.25,
+                    }}
+                  />
+                  {/* Inner solid ring */}
+                  <div
+                    className="w-[80px] h-[80px] rounded-full flex items-center justify-center"
+                    style={{
+                      border: `3px solid ${badge.color}`,
+                      boxShadow: `0 0 0 6px ${badge.ring}`,
+                      background: "#fff",
+                    }}
+                  >
+                    <badge.icon
+                      className="h-7 w-7"
+                      strokeWidth={1.75}
+                      style={{ color: badge.color }}
+                    />
+                  </div>
                 </div>
-                <span className="font-heading font-medium text-lg text-text-primary">{badge.label}</span>
+
+                {/* Label in accent color */}
+                <h3
+                  className="font-heading text-[17px] font-bold leading-snug mb-2"
+                  style={{ color: badge.color }}
+                >
+                  {badge.label}
+                </h3>
+
+                {/* Description */}
+                <p className="text-[13px] text-text-secondary leading-relaxed max-w-[180px]">
+                  {badge.desc}
+                </p>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
