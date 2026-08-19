@@ -160,115 +160,157 @@ export default function HomePage() {
         </div>
       </section>
 
+
       {/* How It Works */}
       <section className="bg-bg border-y border-border overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 py-16 md:py-20">
-          <h2 className="font-heading text-2xl md:text-3xl font-semibold mb-12 text-center text-text-primary">
-            How It Works
-          </h2>
-          <motion.div 
-            className="flex flex-col md:flex-row items-stretch gap-6 md:gap-8 relative"
-          >
-            {steps.map((s, idx) => (
-              <motion.div 
-                key={s.step}
-                className="flex-1 relative"
-              >
-                {(() => {
-                  const content = (
-                    <>
-                      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden rounded-[var(--radius-card)]">
-                         <div className="absolute top-0 bottom-0 -left-full w-full bg-[linear-gradient(120deg,transparent_30%,rgba(255,255,255,0.6)_50%,transparent_70%)] group-hover:animate-shimmer-sweep motion-reduce:hidden" />
-                      </div>
-                      <div className="absolute top-4 left-5 text-[14px] font-heading font-semibold text-text-tertiary/40 tracking-wider z-10">
-                        {s.step}
-                      </div>
-                      <div className="category-card-icon-wrapper mt-4 z-10">
-                        <div className="category-card-icon-bg motion-reduce:transition-none" />
-                        <s.icon className="category-card-icon h-7 w-7" />
-                      </div>
-                      <div className="mt-5 relative z-10">
-                        <h3 className="font-heading text-lg font-semibold text-text-primary">{s.title}</h3>
-                        <p className="mt-2 text-[15px] text-text-secondary leading-relaxed">
-                          {s.desc}
-                        </p>
-                      </div>
-                    </>
-                  );
+        <div className="max-w-5xl mx-auto px-4 py-16 md:py-24">
+          {/* Section header */}
+          <div className="text-center mb-14">
+            <span className="inline-block text-xs font-semibold uppercase tracking-[0.18em] px-3 py-1 rounded-full mb-4"
+              style={{ background: "rgba(32,94,163,0.08)", color: "#205EA3" }}>
+              Simple Process
+            </span>
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-text-primary">
+              How It Works
+            </h2>
+          </div>
 
-                  if (s.step === "01") {
-                    return (
-                      <div 
-                        className="group category-card h-full text-center justify-center pt-8 pb-10 cursor-pointer active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none block relative"
-                        onClick={() => {
-                          const form = document.getElementById('search-step-form');
-                          if (form) {
-                            form.classList.remove('hidden');
-                            form.classList.add('flex');
-                            const input = form.querySelector('input');
-                            if (input) input.focus();
+          {/* Cards row */}
+          <div className="flex flex-col md:flex-row items-stretch gap-6 md:gap-5 relative">
+            {steps.map((s, idx) => {
+              // Per-step accent colors: blue → green → blue-green teal
+              const accent =
+                s.step === "01" ? { color: "#205EA3", ring: "rgba(32,94,163,0.18)",  bg: "rgba(32,94,163,0.05)",  glow: "rgba(32,94,163,0.14)"  }
+              : s.step === "02" ? { color: "#82B63F", ring: "rgba(130,182,63,0.22)", bg: "rgba(130,182,63,0.05)", glow: "rgba(130,182,63,0.16)" }
+              :                   { color: "#205EA3", ring: "rgba(32,94,163,0.18)",  bg: "rgba(32,94,163,0.05)",  glow: "rgba(32,94,163,0.14)"  };
+
+              const card = (
+                <div
+                  className="group relative flex flex-col items-center text-center rounded-2xl border px-6 pt-10 pb-10 h-full transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.98] cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none"
+                  style={{
+                    background: accent.bg,
+                    borderColor: accent.ring,
+                    boxShadow: `0 4px 24px ${accent.glow}`,
+                  }}
+                >
+                  {/* Ring badge */}
+                  <div className="relative flex items-center justify-center mb-7 shrink-0">
+                    {/* Outer thin ring */}
+                    <div
+                      className="absolute rounded-full"
+                      style={{
+                        inset: "-10px",
+                        border: `1.5px dashed ${accent.color}`,
+                        opacity: 0.25,
+                      }}
+                    />
+                    {/* Inner solid ring */}
+                    <div
+                      className="w-[88px] h-[88px] rounded-full flex flex-col items-center justify-center"
+                      style={{
+                        border: `3px solid ${accent.color}`,
+                        boxShadow: `0 0 0 6px ${accent.ring}`,
+                        background: "#fff",
+                      }}
+                    >
+                      <span
+                        className="font-heading font-bold leading-none text-[28px] tracking-tight"
+                        style={{ color: accent.color }}
+                      >
+                        {s.step}
+                      </span>
+                      <span
+                        className="text-[8px] font-semibold tracking-[0.2em] uppercase mt-0.5"
+                        style={{ color: accent.color, opacity: 0.65 }}
+                      >
+                        STEP
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Title in accent color */}
+                  <h3
+                    className="font-heading text-[18px] font-bold leading-snug mb-3"
+                    style={{ color: accent.color }}
+                  >
+                    {s.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-[14px] text-text-secondary leading-relaxed max-w-[200px]">
+                    {s.desc}
+                  </p>
+
+                  {/* Search overlay for step 01 */}
+                  {s.step === "01" && (
+                    <form
+                      id="search-step-form"
+                      action="/products"
+                      className="absolute inset-0 bg-surface rounded-2xl hidden flex-col items-center justify-center p-6 z-30"
+                    >
+                      <input
+                        name="q"
+                        placeholder="What are you looking for?"
+                        className="w-full text-center text-lg border-b-2 border-primary bg-transparent focus:outline-none pb-2 text-text-primary"
+                        onBlur={(e) => {
+                          if (!e.target.value) {
+                            const f = document.getElementById("search-step-form");
+                            if (f) { f.classList.add("hidden"); f.classList.remove("flex"); }
                           }
                         }}
-                      >
-                        {content}
-                        <form 
-                          id="search-step-form"
-                          action="/products" 
-                          className="absolute inset-0 bg-surface rounded-[var(--radius-card)] hidden flex-col items-center justify-center p-6 z-30"
-                        >
-                          <input 
-                            name="q" 
-                            placeholder="What are you looking for?" 
-                            className="w-full text-center text-lg border-b-2 border-primary bg-transparent focus:outline-none pb-2 text-text-primary"
-                            onBlur={(e) => {
-                              if (!e.target.value) {
-                                const form = document.getElementById('search-step-form');
-                                if (form) {
-                                  form.classList.add('hidden');
-                                  form.classList.remove('flex');
-                                }
-                              }
-                            }}
-                          />
-                          <button type="submit" className="mt-4 text-sm text-primary font-medium hover:underline">Search</button>
-                        </form>
-                      </div>
-                    );
-                  }
+                      />
+                      <button type="submit" className="mt-4 text-sm font-medium hover:underline" style={{ color: "#205EA3" }}>
+                        Search
+                      </button>
+                    </form>
+                  )}
+                </div>
+              );
 
-                  return s.href ? (
-                    <Link 
-                      href={s.href} 
-                      className="group category-card h-full text-center justify-center pt-8 pb-10 cursor-pointer active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none block"
-                    >
-                      {content}
-                    </Link>
-                  ) : (
-                    <div 
-                      tabIndex={0}
-                      className="group category-card h-full text-center justify-center pt-8 pb-10 cursor-pointer active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none block"
-                    >
-                      {content}
-                    </div>
-                  );
-                })()}
-                
-                {/* Arrow Connector */}
-                {idx < steps.length - 1 && (
-                  <>
-                    {/* Desktop Arrow */}
-                    <div className="hidden md:flex absolute top-1/2 -right-8 -translate-y-1/2 text-border-strong z-10 w-8 items-center justify-center pointer-events-none">
-                      <ChevronRight className="h-7 w-7" strokeWidth={1.5} />
-                    </div>
-                    {/* Mobile Arrow */}
-                    <div className="md:hidden absolute -bottom-6 left-1/2 -translate-x-1/2 text-border-strong z-10 h-6 flex items-center justify-center pointer-events-none">
-                      <ChevronDown className="h-7 w-7" strokeWidth={1.5} />
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            ))}
-          </motion.div>
+              const cardWithClick =
+                s.step === "01" ? (
+                  <div
+                    key={s.step}
+                    className="flex-1 relative"
+                    onClick={() => {
+                      const f = document.getElementById("search-step-form");
+                      if (f) {
+                        f.classList.remove("hidden"); f.classList.add("flex");
+                        const inp = f.querySelector("input");
+                        if (inp) inp.focus();
+                      }
+                    }}
+                  >
+                    {card}
+                  </div>
+                ) : s.href ? (
+                  <Link key={s.step} href={s.href} className="flex-1 relative block">
+                    {card}
+                  </Link>
+                ) : (
+                  <div key={s.step} className="flex-1 relative" tabIndex={0}>
+                    {card}
+                  </div>
+                );
+
+              return (
+                <React.Fragment key={s.step}>
+                  {cardWithClick}
+                  {/* Chevron separator */}
+                  {idx < steps.length - 1 && (
+                    <>
+                      <div className="hidden md:flex items-center justify-center shrink-0 w-8 text-border-strong self-center pointer-events-none">
+                        <ChevronRight className="h-7 w-7" strokeWidth={1.5} />
+                      </div>
+                      <div className="md:hidden flex items-center justify-center h-6 text-border-strong pointer-events-none">
+                        <ChevronDown className="h-7 w-7" strokeWidth={1.5} />
+                      </div>
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
         </div>
       </section>
 
