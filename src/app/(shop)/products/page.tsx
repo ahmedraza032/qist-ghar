@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createPublicClient } from "@/lib/supabase/server";
 import { ProductListingClient } from "@/components/shop/product-listing-client";
 
@@ -22,10 +23,12 @@ export default async function ProductsPage() {
   const products = (productsRes.data || []) as any[];
 
   return (
-    <ProductListingClient
-      products={products}
-      categories={categoriesRes.data || []}
-      brands={brandsRes.data || []}
-    />
+    <Suspense fallback={<div className="min-h-[50vh]" />}>
+      <ProductListingClient
+        products={products}
+        categories={categoriesRes.data || []}
+        brands={brandsRes.data || []}
+      />
+    </Suspense>
   );
 }
