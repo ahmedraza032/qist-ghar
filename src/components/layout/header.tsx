@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React, { Suspense } from "react";
-import { Logo } from "@/components/ui/logo";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -28,18 +28,18 @@ function HeaderContent() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface">
       <div className="max-w-7xl mx-auto flex h-16 items-center px-4">
         <div className="flex-1 flex justify-start">
-          <span
-            className="flex items-center cursor-pointer"
-            onClick={() => {
+          <Link 
+            href="/" 
+            className="flex items-center"
+            onClick={(e) => {
               if (pathname === "/") {
+                e.preventDefault();
                 window.scrollTo({ top: 0, behavior: "smooth" });
-              } else {
-                window.location.href = "/";
               }
             }}
           >
-            <Logo size="md" />
-          </span>
+            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[44px] w-auto object-contain mix-blend-multiply" quality={100} priority />
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center justify-center gap-6">
