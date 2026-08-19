@@ -44,37 +44,39 @@ const faqs = [
 ];
 
 export function AnimatedFAQ() {
-  const [showFaqs, setShowFaqs] = useState(false);
+  const [showFaqs, setShowFaqs] = useState(true);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* Dropdown Header Button */}
-      <motion.button
-        whileHover={{ y: -2 }}
-        whileTap={{ scale: 0.98 }}
+      {/* Section title */}
+      <h2 className="font-heading text-3xl md:text-4xl font-bold text-text-primary text-center mb-6">
+        Frequently Asked Questions
+      </h2>
+
+      {/* Dropdown Toggle Pill */}
+      <button
         onClick={() => {
           setShowFaqs(!showFaqs);
           if (showFaqs) setOpenIndex(null);
         }}
-        className="group w-full md:w-auto flex items-center justify-between md:justify-center gap-5 px-8 py-4.5 bg-surface border border-border shadow-[var(--shadow-sm)] rounded-[var(--radius-card)] hover:border-primary hover:bg-primary-subtle transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="flex items-center gap-2 px-6 py-2 rounded-full border text-sm font-medium transition-all duration-200 ease-out hover:opacity-90 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 mb-8"
         style={{
-          boxShadow: showFaqs ? "0 6px 20px rgba(32,94,163,0.12)" : undefined,
-          borderColor: showFaqs ? "rgba(32,94,163,0.4)" : undefined,
-          background: showFaqs ? "#FFFFFF" : undefined,
+          background: "rgba(32,94,163,0.08)",
+          borderColor: "rgba(32,94,163,0.18)",
+          color: "#205EA3",
         }}
         aria-expanded={showFaqs}
       >
-        <span className="font-heading text-xl md:text-2xl font-semibold text-text-primary group-hover:text-primary transition-colors">
-          Frequently Asked Questions
-        </span>
-        <motion.div
+        <span>{showFaqs ? "Hide answers" : "View all FAQs"}</span>
+        <motion.span
           animate={{ rotate: showFaqs ? 180 : 0 }}
           transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+          className="inline-flex items-center"
         >
-          <ChevronDown className="h-6 w-6 text-text-tertiary group-hover:text-primary transition-colors" />
-        </motion.div>
-      </motion.button>
+          <ChevronDown className="h-4 w-4" />
+        </motion.span>
+      </button>
 
       {/* FAQ accordion items */}
       <AnimatePresence>
@@ -84,7 +86,7 @@ export function AnimatedFAQ() {
             animate={{ height: "auto", opacity: 1, y: 0 }}
             exit={{ height: 0, opacity: 0, y: -10 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="w-full overflow-hidden pt-8"
+            className="w-full overflow-hidden"
           >
             <div className="w-full flex flex-col gap-4 pb-2">
               {faqs.map((faq, idx) => {
