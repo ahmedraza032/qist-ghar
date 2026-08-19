@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { formatPKR } from "@/lib/helpers/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,6 @@ interface VariantItem {
 }
 
 export function ProductVariantsCard({ baseProductId, variants }: { baseProductId: string; variants: VariantItem[] }) {
-  const router = useRouter();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
@@ -29,7 +27,7 @@ export function ProductVariantsCard({ baseProductId, variants }: { baseProductId
     setDeletingId(null);
     if (result.success) {
       addToast({ title: "Deleted", description: "Variant removed." });
-      router.refresh();
+      window.location.reload();
     } else {
       addToast({ title: "Error", description: result.error || "Failed to delete", variant: "destructive" });
     }

@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Search, Pencil, Trash2, Loader2, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
@@ -38,7 +37,6 @@ export function ProductsTable({
   const [query, setQuery] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
-  const router = useRouter();
   const { addToast } = useToast();
 
   async function handleDelete(id: string) {
@@ -48,7 +46,7 @@ export function ProductsTable({
     setDeletingId(null);
     if (result.success) {
       addToast({ title: "Deleted", description: "Product removed." });
-      router.refresh();
+      window.location.reload();
     } else {
       addToast({ title: "Error", description: result.error || "Failed to delete", variant: "destructive" });
     }
