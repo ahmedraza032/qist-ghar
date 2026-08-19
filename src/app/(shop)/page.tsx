@@ -403,8 +403,8 @@ export default function HomePage() {
       </section>
 
       {/* FAQs */}
-      <section className="bg-bg pb-16 pt-8">
-        <div className="max-w-3xl mx-auto px-4">
+      <section className="bg-bg-tinted py-16 border-t border-border">
+        <div className="max-w-2xl mx-auto px-4">
           <AnimatedFAQ />
         </div>
       </section>
