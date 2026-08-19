@@ -65,6 +65,19 @@
     font-family: var(--font-heading);
     font-weight: 600;
   }
+
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  input:not([type="checkbox"]):not([type="radio"]):hover, select:hover, textarea:hover {
+    border-color: rgba(32, 94, 163, 0.65);
+    box-shadow: 0 0 0 3px rgba(32, 94, 163, 0.12);
+  }
+  input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
+    border-color: #205EA3;
+    box-shadow: 0 0 0 3px rgba(32, 94, 163, 0.22);
+    outline: none;
+  }
 }
 
 @layer components {

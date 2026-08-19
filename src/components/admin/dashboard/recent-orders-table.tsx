@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatPKR } from "@/lib/helpers/format";
 import { motion, AnimatePresence } from "motion/react";
 
-function OrderRow({ order }: { order: any }) {
+function OrderRow({ order, index }: { order: any; index: number }) {
   const [prevStatus, setPrevStatus] = useState(order.status);
   const [pulse, setPulse] = useState(false);
   const isMounted = useRef(false);
@@ -29,12 +29,12 @@ function OrderRow({ order }: { order: any }) {
       initial={{ backgroundColor: "#F1F7E9" }}
       animate={{ backgroundColor: "transparent" }}
       transition={{ duration: 1.2, ease: "linear" }}
-      className="group relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]"
+      className="group relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5] [&>td:first-child]:relative [&>td:first-child]:before:content-[''] [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:left-0 [&>td:first-child]:before:w-[3px] [&>td:first-child]:before:bg-[#205EA3] [&>td:first-child]:before:opacity-0 [&>td:first-child]:before:transition-opacity [&>td:first-child]:before:duration-200 hover:[&>td:first-child]:before:opacity-100"
     >
-      {/* 3px left border accent on hover */}
-      <td className="p-0 absolute inset-y-0 left-0 w-[3px] bg-[#205EA3] opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:opacity-100" />
-      
-      <td className="py-2 pl-4">
+      <td className="py-2 pl-4 text-xs font-mono text-muted-foreground w-12">
+        {index}
+      </td>
+      <td className="py-2">
         <Link 
           href={`/admin/orders/${order.id}`} 
           className="font-mono text-xs hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#205EA3] focus-visible:ring-offset-2 rounded-sm"
@@ -66,7 +66,15 @@ function OrderRow({ order }: { order: any }) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
             >
-              <Badge variant={order.status === "completed" ? "success" : "warning"}>
+              <Badge
+                variant={
+                  order.status === "active" || order.status === "completed"
+                    ? "success"
+                    : order.status === "pending"
+                    ? "default"
+                    : "warning"
+                }
+              >
                 {order.status}
               </Badge>
             </motion.div>
@@ -97,7 +105,8 @@ export function RecentOrdersTable({ orders }: { orders: any[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border text-muted-foreground">
-            <th className="text-left py-2 pl-4 font-medium">Order</th>
+            <th className="text-left py-2 pl-4 font-medium w-12">#</th>
+            <th className="text-left py-2 font-medium">Order</th>
             <th className="text-left py-2 font-medium">Customer</th>
             <th className="text-left py-2 font-medium">Product</th>
             <th className="text-right py-2 font-medium">Amount</th>
@@ -106,8 +115,8 @@ export function RecentOrdersTable({ orders }: { orders: any[] }) {
         </thead>
         <tbody>
           <AnimatePresence initial={false}>
-            {orders.map((order) => (
-              <OrderRow key={order.id} order={order} />
+            {orders.map((order, idx) => (
+              <OrderRow key={order.id} order={order} index={idx} />
             ))}
           </AnimatePresence>
         </tbody>

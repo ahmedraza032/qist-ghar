@@ -18,6 +18,8 @@ interface StatCardProps {
 
 export function StatCard({ title, value, formatType = "number", subtitle, icon, iconClassName, valueClassName, delayMs = 0 }: StatCardProps) {
   const [displayValue, setDisplayValue] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     // Only animate if prefers-reduced-motion is not reduce
@@ -55,20 +57,43 @@ export function StatCard({ title, value, formatType = "number", subtitle, icon, 
     return () => window.cancelAnimationFrame(anim);
   }, [value, delayMs]);
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
   const formattedValue = formatType === "currency" ? formatPKR(displayValue) : displayValue;
 
   return (
     <Card 
       tabIndex={0}
-      className="group relative overflow-hidden transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] border-border hover:border-[#CBD0D8] shadow-[0_1px_2px_rgba(20,24,31,0.04)] hover:shadow-[0_1px_3px_rgba(20,24,31,0.06),0_1px_2px_rgba(20,24,31,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#205EA3] focus-visible:ring-offset-2"
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="group relative overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-border hover:border-[#205EA3]/60 hover:-translate-y-1 shadow-[0_1px_2px_rgba(20,24,31,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(32,94,163,0.22),0_4px_12px_rgba(32,94,163,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#205EA3] focus-visible:ring-offset-2 bg-card cursor-default"
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className={cn("transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100", iconClassName)}>
+      {/* Dynamic Blue Radial Spotlight Glow following cursor */}
+      <div
+        className="pointer-events-none absolute -inset-px transition-opacity duration-300 ease-out"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(350px circle at ${mousePos.x}px ${mousePos.y}px, rgba(32, 94, 163, 0.15), transparent 70%)`,
+        }}
+      />
+
+      {/* Blue top edge glow line */}
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#205EA3] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium transition-colors duration-200 group-hover:text-foreground">{title}</CardTitle>
+        <div className={cn("transition-transform duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100", iconClassName)}>
           {icon}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative z-10">
         <div className={cn("text-2xl font-bold tabular-nums", valueClassName)}>
           {formattedValue}
         </div>

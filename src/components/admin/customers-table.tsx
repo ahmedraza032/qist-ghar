@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Search, Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { formatDate, formatPKR } from "@/lib/helpers/format";
 import { deleteCustomer } from "@/lib/actions/customers";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
   const [query, setQuery] = React.useState("");
   const [page, setPage] = React.useState(1);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [customerToDelete, setCustomerToDelete] = React.useState<CustomerRow | null>(null);
 
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -64,13 +66,15 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
   const currentPage = Math.min(page, totalPages);
   const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this customer? This cannot be undone.")) return;
+  async function handleConfirmDelete() {
+    if (!customerToDelete) return;
+    const id = customerToDelete.id;
     setDeletingId(id);
     const result = await deleteCustomer(id);
     setDeletingId(null);
     if (result.success) {
-      addToast({ title: "Deleted", description: "Customer removed." });
+      addToast({ title: "Deleted", description: `${customerToDelete.full_name} removed.` });
+      setCustomerToDelete(null);
       router.refresh();
     } else {
       addToast({ title: "Error", description: result.error || "Failed to delete", variant: "destructive" });
@@ -95,6 +99,7 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50 text-muted-foreground text-left">
+                  <TableHeader className="w-12 pl-4">#</TableHeader>
                   <TableHeader>Name</TableHeader>
                   <TableHeader>Phone</TableHeader>
                   <TableHeader>City</TableHeader>
@@ -106,41 +111,45 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
                 </tr>
               </thead>
               <tbody>
-                {paged.map((c) => (
-                  <TableRow key={c.id}>
-                    <td className="py-3 px-4">
-                      <Link href={`/admin/customers/${c.id}`} className="font-medium hover:text-primary hover:underline">
-                        {c.full_name}
-                      </Link>
-                    </td>
-                    <td className="py-3 px-4 text-xs">{c.phone}</td>
-                    <td className="py-3 px-4 text-xs">{c.city || "—"}</td>
-                    <td className="py-3 px-4 text-center font-semibold text-xs">{c.orders_count}</td>
-                    <td className="py-3 px-4 text-right font-medium text-xs">{formatPKR(c.total_spent)}</td>
-                    <td className="py-3 px-4 text-right font-medium text-xs text-amount">{formatPKR(c.outstanding)}</td>
-                    <td className="py-3 px-4 text-right text-xs text-muted-foreground">{formatDate(c.created_at)}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Link href={`/admin/customers/${c.id}/edit`}>
-                          <IconActionButton>
-                            <Pencil className="h-4 w-4" />
-                          </IconActionButton>
+                {paged.map((c, idx) => {
+                  const serialNumber = (currentPage - 1) * PAGE_SIZE + idx;
+                  return (
+                    <TableRow key={c.id}>
+                      <td className="py-3 pl-4 text-xs font-mono text-muted-foreground w-12">
+                        {serialNumber}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Link href={`/admin/customers/${c.id}`} className="font-medium hover:text-primary hover:underline">
+                          {c.full_name}
                         </Link>
-                        <IconActionButton
-                          onClick={() => handleDelete(c.id)}
-                          disabled={deletingId === c.id || c.orders_count > 0}
-                          className="text-destructive disabled:opacity-40"
-                        >
-                          {deletingId === c.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
+                      </td>
+                      <td className="py-3 px-4 text-xs">{c.phone}</td>
+                      <td className="py-3 px-4 text-xs">{c.city || "—"}</td>
+                      <td className="py-3 px-4 text-center font-semibold text-xs">{c.orders_count}</td>
+                      <td className="py-3 px-4 text-right font-medium text-xs">{formatPKR(c.total_spent)}</td>
+                      <td className="py-3 px-4 text-right font-medium text-xs text-amount">{formatPKR(c.outstanding)}</td>
+                      <td className="py-3 px-4 text-right text-xs text-muted-foreground">{formatDate(c.created_at)}</td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/admin/customers/${c.id}/edit`}>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#82B63F] hover:bg-[#6FA032] text-white shadow-xs transition-all duration-150 hover:shadow-sm active:scale-95 cursor-pointer">
+                              <Pencil className="h-3 w-3" />
+                              <span>Edit</span>
+                            </span>
+                          </Link>
+                          <IconActionButton
+                            onClick={() => setCustomerToDelete(c)}
+                            disabled={deletingId === c.id}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Delete customer"
+                          >
                             <Trash2 className="h-4 w-4" />
-                          )}
-                        </IconActionButton>
-                      </div>
-                    </td>
-                  </TableRow>
-                ))}
+                          </IconActionButton>
+                        </div>
+                      </td>
+                    </TableRow>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -184,6 +193,82 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
           )}
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {customerToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !deletingId && setCustomerToDelete(null)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Dialog Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="relative z-10 w-full max-w-md bg-white text-zinc-900 rounded-2xl border border-zinc-200 p-6 shadow-2xl space-y-4"
+            >
+              <div className="flex items-start gap-3.5">
+                <div className="p-2.5 rounded-full bg-red-50 text-red-600 border border-red-200 shrink-0">
+                  <AlertTriangle className="h-6 w-6" />
+                </div>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <h3 className="text-lg font-bold font-heading text-zinc-900">Delete Customer</h3>
+                  <p className="text-sm text-zinc-600">
+                    Are you sure you want to delete <span className="font-semibold text-zinc-900">{customerToDelete.full_name}</span>?
+                  </p>
+                </div>
+              </div>
+
+              {customerToDelete.orders_count > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 space-y-1">
+                  <p className="font-semibold flex items-center gap-1.5 text-amber-800">
+                    <span>⚠️</span> Notice:
+                  </p>
+                  <p className="leading-relaxed">This customer has {customerToDelete.orders_count} order(s). All associated orders, installments, and payment records will also be permanently deleted.</p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={!!deletingId}
+                  onClick={() => setCustomerToDelete(null)}
+                  className="bg-[#82B63F] hover:bg-[#71A233] text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-150 hover:-translate-y-0.5 active:scale-95 active:translate-y-0 cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={!!deletingId}
+                  onClick={handleConfirmDelete}
+                  className="bg-[#DC2626] hover:bg-[#B91C1C] text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all duration-150 hover:-translate-y-0.5 active:scale-95 active:translate-y-0 cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                >
+                  {deletingId ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Customer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

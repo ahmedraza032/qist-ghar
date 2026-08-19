@@ -17,7 +17,7 @@ export default async function AdminSettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-1">Configure store contact and order handoff.</p>
+        <p className="text-muted-foreground mt-1">Manage store configuration, payments, branding, and more.</p>
       </div>
 
       <SettingsForm settings={settings} />

@@ -47,7 +47,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         whileHover="hover"
         initial="initial"
-        {...props}
+        {...(props as any)}
       >
         <TextShimmerWave>{children}</TextShimmerWave>
       </motion.button>

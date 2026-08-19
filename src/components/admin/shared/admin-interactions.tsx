@@ -103,23 +103,27 @@ export function IconActionButton({ onClick, children, className, ...props }: Rea
  * 4. Animated Table Row
  */
 export function TableRow({ children, className, isNew = false }: { children: React.ReactNode, className?: string, isNew?: boolean }) {
+  const baseClasses = cn(
+    "group/row border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]",
+    "[&>td:first-child]:relative [&>td:first-child]:before:content-[''] [&>td:first-child]:before:absolute [&>td:first-child]:before:inset-y-0 [&>td:first-child]:before:left-0 [&>td:first-child]:before:w-[3px] [&>td:first-child]:before:bg-[#205EA3] [&>td:first-child]:before:opacity-0 [&>td:first-child]:before:transition-opacity [&>td:first-child]:before:duration-200 hover:[&>td:first-child]:before:opacity-100",
+    className
+  );
+
   if (isNew) {
     return (
       <motion.tr
         initial={{ backgroundColor: "#F1F7E9" }}
         animate={{ backgroundColor: "transparent" }}
         transition={{ duration: 1.2, ease: "linear" }}
-        className={cn("group/row relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]", className)}
+        className={baseClasses}
       >
-        <td className="p-0 absolute inset-y-0 left-0 w-[3px] bg-[#205EA3] opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/row:opacity-100 z-10" />
         {children}
       </motion.tr>
     );
   }
   
   return (
-    <tr className={cn("group/row relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]", className)}>
-      <td className="p-0 absolute inset-y-0 left-0 w-[3px] bg-[#205EA3] opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/row:opacity-100 z-10" />
+    <tr className={baseClasses}>
       {children}
     </tr>
   );

@@ -85,7 +85,7 @@ export function CustomerForm({ customer }: { customer: any | null }) {
 
       <Button type="submit" disabled={saving} className="gap-2">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-        {isEdit ? "Save Changes" : "Create Customer"}
+        {isEdit ? "Update Customer" : "Create Customer"}
       </Button>
     </form>
   );

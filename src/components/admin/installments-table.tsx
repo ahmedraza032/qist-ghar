@@ -142,6 +142,7 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
               <table className="w-full text-sm table-fixed min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground text-left">
+                    <TableHeader className="w-12">#</TableHeader>
                     <TableHeader className="w-24">Order #</TableHeader>
                     <TableHeader>Customer</TableHeader>
                     <TableHeader className="w-44">Product</TableHeader>
@@ -154,63 +155,69 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {paged.map((inst: any) => (
-                    <TableRow key={inst.id}>
-                      <td className="py-2.5 px-3 text-sm">
-                        <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
-                          {inst.order?.id ? `#${inst.order.id.slice(0, 8)}` : "—"}
-                        </Link>
-                      </td>
-                      <td className="py-2.5 px-3 text-sm">
-                        <Link href={`/admin/orders/${inst.order?.id}`} className="hover:text-primary hover:underline font-medium">
-                          {inst.order?.customer?.full_name || "—"}
-                        </Link>
-                      </td>
-                      <td className="py-2.5 px-3 text-sm truncate max-w-[180px]">
-                        {inst.order?.product?.name || "—"}
-                      </td>
-                      <td className="py-2.5 px-3 text-sm">{formatDate(inst.due_date)}</td>
-                      <td className="py-2.5 px-3 text-sm text-right font-medium">
-                        {formatPKR(inst.amount)}
-                      </td>
-                      <td className="py-2.5 px-3 text-sm text-right text-emerald-600 font-medium">
-                        {formatPKR(inst.paidTotal)}
-                      </td>
-                      <td className="py-2.5 px-3 text-sm text-right text-amount font-bold">
-                        {formatPKR(inst.remaining)}
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <AnimatedStatusBadge
-                          status={inst.derivedStatus}
-                          isPositiveState={inst.derivedStatus === "paid"}
-                          variant={
-                            inst.derivedStatus === "paid"
-                              ? "success"
-                              : inst.derivedStatus === "overdue"
-                              ? "destructive"
-                              : inst.derivedStatus === "partial"
-                              ? "outline"
-                              : "warning"
-                          }
-                        />
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {inst.derivedStatus !== "paid" ? (
-                            <RecordPaymentButton
-                              installmentId={inst.id}
-                              dueAmount={inst.amount}
-                              remaining={inst.remaining}
-                            />
-                          ) : (
-                            <Button variant="outline" size="sm" disabled className="gap-1">
-                              <Check className="h-3 w-3" /> Paid
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </TableRow>
-                  ))}
+                  {paged.map((inst: any, idx: number) => {
+                    const serialNumber = (currentPage - 1) * PAGE_SIZE + idx;
+                    return (
+                      <TableRow key={inst.id}>
+                        <td className="py-2.5 px-3 text-xs font-mono text-muted-foreground w-12">
+                          {serialNumber}
+                        </td>
+                        <td className="py-2.5 px-3 text-sm">
+                          <Link href={`/admin/orders/${inst.order?.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
+                            {inst.order?.id ? `#${inst.order.id.slice(0, 8)}` : "—"}
+                          </Link>
+                        </td>
+                        <td className="py-2.5 px-3 text-sm">
+                          <Link href={`/admin/orders/${inst.order?.id}`} className="hover:text-primary hover:underline font-medium">
+                            {inst.order?.customer?.full_name || "—"}
+                          </Link>
+                        </td>
+                        <td className="py-2.5 px-3 text-sm truncate max-w-[180px]">
+                          {inst.order?.product?.name || "—"}
+                        </td>
+                        <td className="py-2.5 px-3 text-sm">{formatDate(inst.due_date)}</td>
+                        <td className="py-2.5 px-3 text-sm text-right font-medium">
+                          {formatPKR(inst.amount)}
+                        </td>
+                        <td className="py-2.5 px-3 text-sm text-right text-emerald-600 font-medium">
+                          {formatPKR(inst.paidTotal)}
+                        </td>
+                        <td className="py-2.5 px-3 text-sm text-right text-amount font-bold">
+                          {formatPKR(inst.remaining)}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <AnimatedStatusBadge
+                            status={inst.derivedStatus}
+                            isPositiveState={inst.derivedStatus === "paid"}
+                            variant={
+                              inst.derivedStatus === "paid"
+                                ? "success"
+                                : inst.derivedStatus === "pending"
+                                ? "default"
+                                : inst.derivedStatus === "overdue"
+                                ? "destructive"
+                                : "warning"
+                            }
+                          />
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            {inst.derivedStatus !== "paid" ? (
+                              <RecordPaymentButton
+                                installmentId={inst.id}
+                                dueAmount={inst.amount}
+                                remaining={inst.remaining}
+                              />
+                            ) : (
+                              <Button variant="outline" size="sm" disabled className="gap-1">
+                                <Check className="h-3 w-3" /> Paid
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </TableRow>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -234,10 +241,10 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
                         variant={
                           inst.derivedStatus === "paid"
                             ? "success"
+                            : inst.derivedStatus === "pending"
+                            ? "default"
                             : inst.derivedStatus === "overdue"
                             ? "destructive"
-                            : inst.derivedStatus === "partial"
-                            ? "outline"
                             : "warning"
                         }
                       />

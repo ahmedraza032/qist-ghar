@@ -50,15 +50,27 @@ export async function updateCustomer(id: string, data: CustomerInput): Promise<C
 export async function deleteCustomer(id: string): Promise<CustomerResult> {
   const supabase = await createServiceClient();
 
-  const { count } = await supabase
+  // Find all orders for this customer
+  const { data: orders } = await supabase
     .from("orders")
-    .select("id", { count: "exact", head: true })
+    .select("id")
     .eq("customer_id", id);
 
-  if ((count || 0) > 0) {
-    return { success: false, error: "Cannot delete a customer with existing orders." };
+  const orderIds = (orders || []).map((o: any) => o.id);
+
+  if (orderIds.length > 0) {
+    // Delete payments for these orders
+    await supabase.from("payments").delete().in("order_id", orderIds);
+    // Delete installments for these orders
+    await supabase.from("installments").delete().in("order_id", orderIds);
+    // Delete orders
+    const { error: orderError } = await supabase.from("orders").delete().eq("customer_id", id);
+    if (orderError) {
+      return { success: false, error: orderError.message };
+    }
   }
 
+  // Delete customer record
   const { error } = await supabase.from("customers").delete().eq("id", id);
   if (error) {
     return { success: false, error: error.message };

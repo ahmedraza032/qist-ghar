@@ -137,8 +137,10 @@ export default async function AdminOrderDetailPage({
           {/* <DownloadReceiptButton data={receiptData} /> */}
           <Badge
             variant={
-              o.status === "completed"
+              o.status === "active" || o.status === "completed"
                 ? "success"
+                : o.status === "pending"
+                ? "default"
                 : "warning"
             }
           >
@@ -173,7 +175,7 @@ export default async function AdminOrderDetailPage({
               <div className="border-t border-border pt-3 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Down Payment</span>
-                  <span>{formatPKR(o.down_payment_amount)}</span>
+                  <span className="font-medium text-emerald-600">{formatPKR(o.down_payment_amount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monthly</span>

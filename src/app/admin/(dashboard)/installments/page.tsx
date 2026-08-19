@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { InstallmentsTable } from "@/components/admin/installments-table";
 import { deriveInstallmentStatus } from "@/lib/helpers/installments";
 
+import { Clock, CheckCircle2, AlertTriangle, Calendar } from "lucide-react";
+import { StatCard } from "@/components/admin/dashboard/stat-card";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminInstallmentsPage() {
@@ -50,42 +53,38 @@ export default async function AdminInstallmentsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Active Installments</p>
-            <p className="text-3xl font-bold text-amber-600">{active.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPKR(active.reduce((s: number, i: any) => s + (i.amount || 0), 0))} outstanding
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Completed Installments</p>
-            <p className="text-3xl font-bold text-primary">{completed.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPKR(completed.reduce((s: number, i: any) => s + (i.amount || 0), 0))} collected
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Overdue</p>
-            <p className="text-3xl font-bold text-destructive">{overdue.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPKR(overdue.reduce((s: number, i: any) => s + (i.amount || 0), 0))} outstanding
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground">Due This Month</p>
-            <p className="text-3xl font-bold text-amber-600">{dueThisMonth.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {formatPKR(dueThisMonth.reduce((s: number, i: any) => s + (i.amount || 0), 0))} expected
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Active Installments"
+          value={active.length}
+          subtitle={`${formatPKR(active.reduce((s: number, i: any) => s + (i.amount || 0), 0))} outstanding`}
+          icon={<Clock className="h-4 w-4 text-amber-600" />}
+          valueClassName="text-amber-600"
+          delayMs={0}
+        />
+        <StatCard
+          title="Completed Installments"
+          value={completed.length}
+          subtitle={`${formatPKR(completed.reduce((s: number, i: any) => s + (i.amount || 0), 0))} collected`}
+          icon={<CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+          valueClassName="text-emerald-600"
+          delayMs={40}
+        />
+        <StatCard
+          title="Overdue"
+          value={overdue.length}
+          subtitle={`${formatPKR(overdue.reduce((s: number, i: any) => s + (i.amount || 0), 0))} outstanding`}
+          icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
+          valueClassName="text-destructive"
+          delayMs={80}
+        />
+        <StatCard
+          title="Due This Month"
+          value={dueThisMonth.length}
+          subtitle={`${formatPKR(dueThisMonth.reduce((s: number, i: any) => s + (i.amount || 0), 0))} expected`}
+          icon={<Calendar className="h-4 w-4 text-amber-600" />}
+          valueClassName="text-amber-600"
+          delayMs={120}
+        />
       </div>
 
       <InstallmentsTable installments={list} />

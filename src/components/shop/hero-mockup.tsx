@@ -356,11 +356,6 @@ export function HeroMockup() {
               e.stopPropagation();
               setCurrent(i);
               setPaused(true);
-              if (!reducedMotion) {
-                setRipple(false);
-                requestAnimationFrame(() => requestAnimationFrame(() => setRipple(true)));
-                setTimeout(() => setRipple(false), 700);
-              }
               setTimeout(() => setPaused(false), 8000);
             }}
             className="transition-all duration-300 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"

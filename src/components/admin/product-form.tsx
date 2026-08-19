@@ -61,10 +61,11 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
       }));
       const combos = (product.variant_combinations || []).map((c: any) => ({
         id: c.id,
-        options: c.combination_options.map((co: any) => {
+        options: (c.combination_options || []).map((co: any) => {
           // Find option value from id
+          const optId = co.option_id || co.variant_option_id;
           for (const a of attrs) {
-            const opt = a.options.find((o: any) => o.id === co.variant_option_id);
+            const opt = (a.options || []).find((o: any) => o.id === optId);
             if (opt) return opt.value;
           }
           return "";
@@ -363,7 +364,7 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
         </label>
         <Button onClick={handleSave} disabled={saving} className="ml-auto gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {isEdit ? "Save Changes" : "Create Product"}
+          {isEdit ? "Update Product" : "Create Product"}
         </Button>
       </div>
     </div>

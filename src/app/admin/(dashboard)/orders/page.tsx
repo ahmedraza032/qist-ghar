@@ -204,6 +204,7 @@ export default function AdminOrdersPage() {
                 <table className="w-full text-sm min-w-[1000px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/40 text-muted-foreground text-left whitespace-nowrap">
+                      <TableHeader className="py-2.5 px-3 font-semibold w-12">#</TableHeader>
                       <TableHeader className="py-2.5 px-3 font-semibold">Order</TableHeader>
                       <TableHeader className="py-2.5 px-3 font-semibold">Customer</TableHeader>
                       <TableHeader className="py-2.5 px-3 font-semibold">Contact</TableHeader>
@@ -216,9 +217,13 @@ export default function AdminOrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paged.map((order) => {
+                    {paged.map((order, idx) => {
+                      const serialNumber = (currentPage - 1) * PAGE_SIZE + idx;
                       return (
                         <TableRow key={order.id}>
+                          <td className="py-2.5 px-3 text-xs font-mono text-muted-foreground w-12">
+                            {serialNumber}
+                          </td>
                           <td className="py-2.5 px-3">
                             <Link href={`/admin/orders/${order.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
                               #{order.id.slice(0, 8)}
@@ -254,7 +259,7 @@ export default function AdminOrdersPage() {
                           </td>
   
                           <td className="py-2.5 px-3 text-right">
-                            <div className="font-semibold text-amount">
+                            <div className="font-semibold text-emerald-600">
                               {formatPKR(order.down_payment_amount || 0)}
                             </div>
                           </td>
@@ -266,10 +271,12 @@ export default function AdminOrdersPage() {
                           <td className="py-2.5 px-3 text-right">
                             <AnimatedStatusBadge
                               status={order.status}
-                              isPositiveState={order.status === "completed"}
+                              isPositiveState={order.status === "active" || order.status === "completed"}
                               variant={
-                                order.status === "completed"
+                                order.status === "active" || order.status === "completed"
                                   ? "success"
+                                  : order.status === "pending"
+                                  ? "default"
                                   : "warning"
                               }
                             />
@@ -296,8 +303,14 @@ export default function AdminOrdersPage() {
                         <span className="text-xs text-muted-foreground font-medium mb-1">Status</span>
                         <AnimatedStatusBadge 
                           status={order.status}
-                          isPositiveState={order.status === "completed"}
-                          variant={order.status === "completed" ? "success" : "warning"} 
+                          isPositiveState={order.status === "active" || order.status === "completed"}
+                          variant={
+                            order.status === "active" || order.status === "completed"
+                              ? "success"
+                              : order.status === "pending"
+                              ? "default"
+                              : "warning"
+                          } 
                         />
                       </div>
                     </div>
@@ -329,7 +342,7 @@ export default function AdminOrdersPage() {
                       </div>
                       <div className="flex justify-between items-center border-b border-border pb-3">
                         <span className="text-sm text-muted-foreground">Down Payment</span>
-                        <span className="text-sm font-semibold text-amount">{formatPKR(order.down_payment_amount || 0)}</span>
+                        <span className="text-sm font-semibold text-emerald-600">{formatPKR(order.down_payment_amount || 0)}</span>
                       </div>
                       <div className="flex justify-between items-center border-b border-border pb-3">
                         <span className="text-sm text-muted-foreground">Payment</span>
