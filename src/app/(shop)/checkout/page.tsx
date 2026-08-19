@@ -37,15 +37,15 @@ function CheckoutPageInner() {
         durationMonths: parseInt(searchParams.get("duration") || "3"),
         markupPercent: parseInt(searchParams.get("markup") || "0"),
         downPayment: parseInt(searchParams.get("down_payment") || "0"),
+        minDownPaymentPct: parseInt(searchParams.get("min_down_payment") || "25"),
         monthlyPayment: parseInt(searchParams.get("monthly") || "0"),
         totalPrice: parseInt(searchParams.get("total") || "0"),
-        variantId: searchParams.get("variant_id") || "",
-        variantName: searchParams.get("variant_name") || "",
       }
     : null;
 
   const basePrice = checkoutItem?.basePrice || 0;
-  const minDownPayment = Math.ceil(basePrice * 0.25);
+  const totalPrice = checkoutItem?.totalPrice || 0;
+  const minDownPayment = Math.ceil(totalPrice * ((checkoutItem?.minDownPaymentPct || 25) / 100));
   const initialDP = checkoutItem?.downPayment && checkoutItem.downPayment >= minDownPayment
     ? checkoutItem.downPayment
     : minDownPayment;
@@ -53,7 +53,6 @@ function CheckoutPageInner() {
   const [customDownPayment, setCustomDownPayment] = React.useState<number>(initialDP);
 
   const durationMonths = checkoutItem?.durationMonths || 3;
-  const totalPrice = checkoutItem?.totalPrice || 0;
   const activeDownPayment = Math.max(minDownPayment, customDownPayment || minDownPayment);
   const calculatedMonthly = Math.round(Math.max(0, totalPrice - activeDownPayment) / durationMonths);
   const dueToday = activeDownPayment;
@@ -120,8 +119,6 @@ function CheckoutPageInner() {
         phone: form.phone,
         address: form.address,
         city: form.city,
-        variantId: checkoutItem.variantId,
-        variantName: checkoutItem.variantName,
       });
 
       setWaLink(result.url);
@@ -266,9 +263,6 @@ function CheckoutPageInner() {
                 {items.map((item) => (
                   <div key={item.productId}>
                     <p className="font-sans font-semibold text-[15px] text-text-primary leading-tight">{item.productName}</p>
-                    {item.variantName && (
-                      <p className="text-[13px] text-text-tertiary mt-1 font-sans font-medium uppercase tracking-wide">{item.variantName}</p>
-                    )}
                     
                     <div className="mt-6 space-y-0">
                       {/* Row: Original Price */}

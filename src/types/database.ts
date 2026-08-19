@@ -50,11 +50,14 @@ export interface Product {
   is_published: boolean;
   images: string[];
   created_at: string;
+  tenure_pricing?: TenurePricing[] | null;
+  has_variants: boolean;
+  parent_product_id: string | null;
+  variant_label: string | null;
   brand?: Brand | null;
   category?: Category | null;
   installment_plans?: InstallmentPlan[];
-  variant_attributes?: ProductVariantAttribute[];
-  variant_combinations?: ProductVariantCombination[];
+  variants?: Product[];
 }
 
 export type SupabaseProduct = Omit<Product, "brand" | "category"> & {
@@ -70,6 +73,12 @@ export interface InstallmentPlan {
   down_payment_percent: number;
 }
 
+export interface TenurePricing {
+  duration_months: number;
+  markup_percent: number;
+  down_payment_percent: number;
+}
+
 export type OrderStatus = "active" | "completed";
 
 export interface Order {
@@ -77,7 +86,6 @@ export interface Order {
   customer_id: string;
   product_id: string;
   plan_id: string;
-  variant_combination_id: string | null;
   status: OrderStatus;
   down_payment_amount: number;
   monthly_amount: number;
@@ -89,7 +97,6 @@ export interface Order {
   installments?: Installment[];
   payments?: Payment[];
   customer?: Customer;
-  variant_combination?: ProductVariantCombination;
 }
 
 export type InstallmentStatus = "pending" | "paid" | "overdue";
@@ -111,43 +118,6 @@ export interface Payment {
   method: string;
   reference_no: string;
   paid_at: string;
-}
-
-export interface ProductVariantAttribute {
-  id: string;
-  product_id: string;
-  name: string;
-  display_order: number;
-  created_at: string;
-  options?: ProductVariantOption[];
-}
-
-export interface ProductVariantOption {
-  id: string;
-  attribute_id: string;
-  value: string;
-  display_order: number;
-  created_at: string;
-}
-
-export interface ProductVariantCombination {
-  id: string;
-  product_id: string;
-  price_adjustment: number;
-  absolute_price: number | null;
-  stock_qty: number;
-  is_active: boolean;
-  created_at: string;
-  options?: ProductVariantOption[];
-}
-
-export interface CategoryDefaultVariantAttribute {
-  id: string;
-  category_id: string;
-  attribute_name: string;
-  display_order: number;
-  default_options: string[];
-  created_at: string;
 }
 
 export interface Banner {

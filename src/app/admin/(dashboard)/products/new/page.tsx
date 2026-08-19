@@ -3,21 +3,36 @@ import { ProductForm } from "@/components/admin/product-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewProductPage() {
+export default async function NewProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ parent?: string }>;
+}) {
   const supabase = await createServiceClient();
+  const { parent } = await searchParams;
 
-  const [catRes, brandRes, defaultVarsRes] = await Promise.all([
+  const [catRes, brandRes] = await Promise.all([
     supabase.from("categories").select("id, name").order("name"),
     supabase.from("brands").select("id, name").order("name"),
-    supabase.from("category_default_variant_attributes").select("*"),
   ]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let parentProduct: any = null;
+  if (parent) {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", parent)
+      .single();
+    parentProduct = data ?? null;
+  }
 
   return (
     <ProductForm
       categories={catRes.data || []}
       brands={brandRes.data || []}
       product={null}
-      defaultVariants={defaultVarsRes.data || []}
+      parentProduct={parentProduct}
     />
   );
 }

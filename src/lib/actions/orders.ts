@@ -15,7 +15,6 @@ export interface CreateOrderInput {
   totalAmount: number;
   paymentMethod: string;
   startDate: string;
-  variantCombinationId?: string;
 }
 
 export interface CreateOrderResult {
@@ -101,7 +100,6 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       monthly_amount: input.monthlyAmount,
       total_amount: input.totalAmount,
       payment_method: input.paymentMethod,
-      variant_combination_id: input.variantCombinationId || null,
     })
     .select("id")
     .single();

@@ -2,11 +2,14 @@
 
 import React from "react";
 import Link from "next/link";
-import { Search, Pencil, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Pencil, Trash2, Loader2, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import { deleteProduct } from "@/lib/actions/products";
 import { SearchInput, TableRow, TableHeader, AnimatedStatusBadge, IconActionButton } from "@/components/admin/shared/admin-interactions";
 
 const PAGE_SIZE = 30;
@@ -34,6 +37,22 @@ export function ProductsTable({
 }) {
   const [query, setQuery] = React.useState("");
   const [page, setPage] = React.useState(1);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const router = useRouter();
+  const { addToast } = useToast();
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this product? This cannot be undone.")) return;
+    setDeletingId(id);
+    const result = await deleteProduct(id);
+    setDeletingId(null);
+    if (result.success) {
+      addToast({ title: "Deleted", description: "Product removed." });
+      router.refresh();
+    } else {
+      addToast({ title: "Error", description: result.error || "Failed to delete", variant: "destructive" });
+    }
+  }
 
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -122,6 +141,17 @@ export function ProductsTable({
                             <Pencil className="h-4 w-4" />
                           </IconActionButton>
                         </Link>
+                        <IconActionButton
+                          onClick={() => handleDelete(product.id)}
+                          disabled={deletingId === product.id}
+                          className="text-destructive disabled:opacity-40"
+                        >
+                          {deletingId === product.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </IconActionButton>
                       </div>
                     </td>
                   </TableRow>

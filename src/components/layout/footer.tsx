@@ -42,7 +42,7 @@ export function Footer() {
                 }
               }}
             >
-              <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[48px] w-auto object-contain mix-blend-multiply" quality={100} />
+              <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[48px] w-auto object-contain mix-blend-multiply" />
             </Link>
             <p className="text-sm text-text-secondary mt-2 max-w-xs">
               Buy phones and electronics on easy installments. Pay monthly with JazzCash, Easypaisa, or bank transfer.

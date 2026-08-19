@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ShoppingBag, Truck, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
-import { calculateInstallment, getAllInstallmentOptions, MIN_DOWN_PAYMENT_PCT } from "@/lib/helpers/installments";
+import { calculateInstallment, getAllInstallmentOptions, getTenureConfig } from "@/lib/helpers/installments";
 import type { InstallmentBreakdown } from "@/lib/helpers/installments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,7 @@ interface ProductDetail {
   stock_qty: number;
   brand?: { name: string; id: string };
   category?: { name: string; slug: string };
-  variant_attributes?: any[];
-  variant_combinations?: any[];
+  tenure_pricing?: any[];
 }
 
 interface RelatedProduct {
@@ -40,77 +39,84 @@ interface RelatedProduct {
   slug: string;
   base_price: number;
   images: string[];
+  tenure_pricing?: any[];
+}
+
+interface Variant {
+  id: string;
+  name: string;
+  variant_label?: string | null;
+  base_price: number;
+  stock_qty: number;
+  images: string[];
+  tenure_pricing?: any[];
 }
 
 interface ProductDetailClientProps {
   product: ProductDetail;
+  variants: Variant[];
   related: RelatedProduct[];
 }
 
 const DURATIONS = [3, 6, 9, 12];
 
-export function ProductDetailClient({ product, related }: ProductDetailClientProps) {
+export function ProductDetailClient({ product, variants, related }: ProductDetailClientProps) {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = React.useState(0);
   const [selectedDuration, setSelectedDuration] = React.useState(3);
   const [activeTab, setActiveTab] = React.useState<"specs" | "description">("specs");
-  
-  // Variant Selection State (attribute_id -> option_id)
-  const [selectedVariants, setSelectedVariants] = React.useState<Record<string, string>>({});
 
-  const attrs = product.variant_attributes || [];
-  const combos = product.variant_combinations || [];
-  const hasVariants = attrs.length > 0;
-  
-  // Validate if all attributes have a selection
-  const allVariantsSelected = !hasVariants || attrs.every((a) => selectedVariants[a.id]);
+  const hasVariants = variants.length > 0;
+  const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
+    hasVariants ? variants[0].id : null
+  );
 
-  // Find the matching combination based on selection
-  const activeCombination = React.useMemo(() => {
-    if (!allVariantsSelected) return null;
-    const selectedOptionIds = Object.values(selectedVariants);
-    return combos.find((c) => {
-      const comboOptionIds = c.options.map((o: any) => o.id);
-      return comboOptionIds.length === selectedOptionIds.length &&
-             comboOptionIds.every((id: string) => selectedOptionIds.includes(id));
-    });
-  }, [selectedVariants, allVariantsSelected, combos]);
+  function selectVariant(id: string) {
+    setSelectedVariantId(id);
+    setSelectedImage(0);
+  }
 
-  const effectiveBasePrice = activeCombination
-    ? (activeCombination.absolute_price || product.base_price + (activeCombination.price_adjustment || 0))
-    : product.base_price;
+  const activeProduct = hasVariants
+    ? variants.find((v) => v.id === selectedVariantId) ?? variants[0]
+    : product;
 
-  const minDownPayment = Math.ceil(effectiveBasePrice * (MIN_DOWN_PAYMENT_PCT / 100));
+  const activeImages = activeProduct.images?.length ? activeProduct.images : product.images;
+
+  const effectiveBasePrice = activeProduct.base_price;
+
+  const tenureConfig = getTenureConfig(activeProduct.tenure_pricing ?? product.tenure_pricing);
+  const activeTenure = tenureConfig[selectedDuration];
+  const activeTotalPrice = Math.round(effectiveBasePrice * (1 + activeTenure.markup / 100));
+  const minDownPayment = Math.ceil(activeTotalPrice * (activeTenure.downPayment / 100));
+  const maxTenureDownPayment = Math.ceil(
+    Math.round(effectiveBasePrice * (1 + tenureConfig[12].markup / 100)) * (tenureConfig[12].downPayment / 100)
+  );
   const [customDownPayment, setCustomDownPayment] = React.useState<number | "">("");
 
   const activeDownPayment = typeof customDownPayment === "number" && customDownPayment >= minDownPayment
     ? customDownPayment
     : minDownPayment;
 
-  const breakdown = calculateInstallment(effectiveBasePrice, selectedDuration, undefined, activeDownPayment);
-  const allOptions = getAllInstallmentOptions(effectiveBasePrice, activeDownPayment);
+  const breakdown = calculateInstallment(effectiveBasePrice, selectedDuration, activeTenure.markup, activeDownPayment, activeTenure.downPayment);
+  const allOptions = getAllInstallmentOptions(effectiveBasePrice, undefined, tenureConfig);
   
-  const inStock = hasVariants
-    ? (activeCombination ? activeCombination.stock_qty > 0 : false)
-    : product.stock_qty > 0;
+  const inStock = activeProduct.stock_qty > 0;
 
   const buyerParams = new URLSearchParams({
-    product_id: product.id,
-    product_name: product.name,
+    product_id: activeProduct.id,
+    product_name: activeProduct.name,
     product_slug: product.slug,
-    product_image: product.images?.[0] || '',
+    product_image: activeImages[0] || '',
     base_price: String(effectiveBasePrice),
     duration: String(selectedDuration),
     markup: String(breakdown.markupPercent),
     down_payment: String(breakdown.downPayment),
+    min_down_payment: String(activeTenure.downPayment),
     monthly: String(breakdown.monthlyPayment),
     total: String(breakdown.totalPrice),
-    variant_id: activeCombination?.id || '',
-    variant_name: activeCombination?.options?.map((o: any) => o.value).join(", ") || '',
   }).toString();
 
   async function handleBuyNow() {
-    if (!allVariantsSelected) return;
     if (!inStock) return;
     router.push(`/checkout?${buyerParams}`);
   }
@@ -136,10 +142,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
         {/* Image Gallery */}
         <div>
           <div className="relative aspect-square bg-surface rounded-[var(--radius-card)] shadow-[var(--shadow-xs)] overflow-hidden border border-border">
-            {product.images?.[selectedImage] ? (
+            {activeImages?.[selectedImage] ? (
               <Image
-                src={product.images[selectedImage]}
-                alt={product.name}
+                src={activeImages[selectedImage]}
+                alt={activeProduct.name}
                 fill
                 className="object-contain p-6"
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -156,9 +162,9 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               </Badge>
             )}
           </div>
-          {product.images && product.images.length > 1 && (
+          {activeImages && activeImages.length > 1 && (
             <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
-              {product.images.map((img, i) => (
+              {activeImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
@@ -169,7 +175,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                 >
                   <Image
                     src={img}
-                    alt={`${product.name} ${i + 1}`}
+                    alt={`${activeProduct.name} ${i + 1}`}
                     fill
                     className="object-cover p-1"
                     sizes="72px"
@@ -190,37 +196,35 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           <h1 className="font-heading font-semibold text-text-primary text-[28px] leading-tight">
             {product.name}
           </h1>
-          <p className="font-heading font-medium text-secondary-text text-[32px] tabular-nums mt-3 flex items-center">
-            Rs <SlidingNumber value={effectiveBasePrice.toLocaleString("en-US")} />
-          </p>
+          <div className="mt-3">
+            <p className="text-[12px] text-text-tertiary font-sans">Down Payment</p>
+            <p className="font-heading font-medium text-secondary-text text-[32px] tabular-nums flex items-center">
+              Rs <SlidingNumber value={maxTenureDownPayment.toLocaleString("en-US")} />
+            </p>
+          </div>
 
-          {/* Variant Selectors */}
           {hasVariants && (
-            <div className="mt-8 space-y-5">
-              {attrs.map((attr) => (
-                <div key={attr.id}>
-                  <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">{attr.name}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {attr.options.map((opt: any) => {
-                      const isSelected = selectedVariants[attr.id] === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          onClick={() => setSelectedVariants(prev => ({ ...prev, [attr.id]: opt.id }))}
-                          className={cn(
-                            "px-4 py-2 text-sm rounded-[var(--radius-control)] border transition-colors font-sans font-medium",
-                            isSelected
-                              ? "border-primary bg-primary-subtle text-primary"
-                              : "border-border bg-surface text-text-secondary hover:bg-surface-alt hover:text-text-primary"
-                          )}
-                        >
-                          {opt.value}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+            <div className="mt-6">
+              <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Select Variant</h3>
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v) => {
+                  const isSelected = v.id === (selectedVariantId ?? variants[0].id);
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => selectVariant(v.id)}
+                      className={cn(
+                        "px-4 py-2 text-sm rounded-[var(--radius-control)] border transition-colors font-sans font-medium",
+                        isSelected
+                          ? "border-primary bg-primary-subtle text-primary"
+                          : "border-border bg-surface text-text-secondary hover:bg-surface-alt hover:text-text-primary"
+                      )}
+                    >
+                      {v.variant_label || v.name}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -293,7 +297,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                 </div>
                 {typeof customDownPayment === "number" && customDownPayment < minDownPayment && (
                   <div className="text-[12px] text-destructive text-right font-sans font-medium mt-1">
-                    Min {MIN_DOWN_PAYMENT_PCT}% required
+                    Min {activeTenure.downPayment}% required
                   </div>
                 )}
               </div>
@@ -327,23 +331,15 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             <Button
               size="lg"
               className="w-full gap-2 bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] shadow-[var(--shadow-sm)] font-medium h-14 text-[16px] border-none"
-              disabled={!inStock || !allVariantsSelected}
+              disabled={!inStock}
               onClick={handleBuyNow}
             >
               <ShoppingBag className="h-5 w-5" />
-              {!allVariantsSelected
-                ? "Select Options"
-                : inStock
-                  ? <span className="flex items-center gap-1">Buy on Installments — Rs <SlidingNumber value={breakdown.monthlyPayment.toLocaleString("en-US")} />/mo</span>
-                  : "Out of Stock"}
+              {inStock
+                ? <span className="flex items-center gap-1">Buy on Installments — Rs <SlidingNumber value={breakdown.monthlyPayment.toLocaleString("en-US")} />/mo</span>
+                : "Out of Stock"}
             </Button>
           </div>
-
-          {allVariantsSelected && !inStock && (
-            <p className="text-sm text-destructive mt-2 text-center font-sans font-medium">
-              This product combination is currently out of stock.
-            </p>
-          )}
 
           <div className="flex items-center gap-6 justify-center mt-2 text-[13px] text-text-tertiary font-sans">
             <span className="flex items-center gap-1.5">
@@ -447,8 +443,9 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             }}
           >
             {related.map((rp) => {
-              const inst = calculateInstallment(rp.base_price, 3);
-              const planOptions = getAllInstallmentOptions(rp.base_price);
+              const rpTenure = getTenureConfig(rp.tenure_pricing);
+              const inst = calculateInstallment(rp.base_price, 3, rpTenure[3].markup, undefined, rpTenure[3].downPayment);
+              const planOptions = getAllInstallmentOptions(rp.base_price, undefined, rpTenure);
               return (
                 <motion.div
                   key={rp.id}
@@ -529,10 +526,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           <Button 
             size="lg" 
             className="flex-1 min-h-[44px] bg-primary text-white rounded-[var(--radius-control)] shadow-[var(--shadow-sm)] font-medium border-none hover:bg-primary-hover" 
-            disabled={!inStock || !allVariantsSelected} 
+            disabled={!inStock} 
             onClick={handleBuyNow}
           >
-            {!allVariantsSelected ? "Select Options" : "Buy Now"}
+            Buy Now
           </Button>
         </div>
       </div>

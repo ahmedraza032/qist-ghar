@@ -103,23 +103,26 @@ export function IconActionButton({ onClick, children, className, ...props }: Rea
  * 4. Animated Table Row
  */
 export function TableRow({ children, className, isNew = false }: { children: React.ReactNode, className?: string, isNew?: boolean }) {
+  const rowClasses = cn(
+    "border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]",
+    className
+  );
+
   if (isNew) {
     return (
       <motion.tr
         initial={{ backgroundColor: "#F1F7E9" }}
         animate={{ backgroundColor: "transparent" }}
         transition={{ duration: 1.2, ease: "linear" }}
-        className={cn("group/row relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]", className)}
+        className={rowClasses}
       >
-        <td className="p-0 absolute inset-y-0 left-0 w-[3px] bg-[#205EA3] opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/row:opacity-100 z-10" />
         {children}
       </motion.tr>
     );
   }
   
   return (
-    <tr className={cn("group/row relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]", className)}>
-      <td className="p-0 absolute inset-y-0 left-0 w-[3px] bg-[#205EA3] opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/row:opacity-100 z-10" />
+    <tr className={rowClasses}>
       {children}
     </tr>
   );

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SearchInput, TableRow, TableHeader, AnimatedStatusBadge } from "@/components/admin/shared/admin-interactions";
+import { PrintReceiptButton } from "@/components/admin/print-receipt-button";
 
 const PAGE_SIZE = 30;
 
@@ -37,7 +38,6 @@ interface OrderItem {
   created_at: string;
   product?: { id: string; name: string };
   customer?: { id: string; full_name: string; phone: string; city: string; address: string };
-  variant_combination?: any;
 }
 
 export default function AdminOrdersPage() {
@@ -213,6 +213,7 @@ export default function AdminOrdersPage() {
                       <TableHeader className="py-2.5 px-3 font-semibold">Payment</TableHeader>
                       <TableHeader className="py-2.5 px-3 font-semibold">Date</TableHeader>
                       <TableHeader className="py-2.5 px-3 font-semibold text-right">Status</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold text-right">Receipt</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -242,11 +243,6 @@ export default function AdminOrdersPage() {
   
                           <td className="py-2.5 px-3 font-medium truncate max-w-[130px]">
                             <div className="line-clamp-1">{order.product?.name || "—"}</div>
-                            {order.variant_combination?.combination_options && (
-                              <div className="text-xs text-muted-foreground font-normal line-clamp-1">
-                                {order.variant_combination.combination_options.map((co: any) => co.option?.value).filter(Boolean).join(", ")}
-                              </div>
-                            )}
                           </td>
   
                           <td className="py-2.5 px-3 text-right font-medium">
@@ -273,6 +269,9 @@ export default function AdminOrdersPage() {
                                   : "warning"
                               }
                             />
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <PrintReceiptButton orderId={order.id} />
                           </td>
                         </TableRow>
                       );
@@ -316,11 +315,6 @@ export default function AdminOrdersPage() {
                         <span className="text-sm text-muted-foreground">Product</span>
                         <div className="text-right max-w-[160px]">
                           <span className="text-sm font-medium line-clamp-2">{order.product?.name || "—"}</span>
-                          {order.variant_combination?.combination_options && (
-                            <div className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                              {order.variant_combination.combination_options.map((co: any) => co.option?.value).filter(Boolean).join(", ")}
-                            </div>
-                          )}
                         </div>
                       </div>
                       <div className="flex justify-between items-center border-b border-border pb-3">

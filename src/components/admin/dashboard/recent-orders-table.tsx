@@ -29,11 +29,8 @@ function OrderRow({ order }: { order: any }) {
       initial={{ backgroundColor: "#F1F7E9" }}
       animate={{ backgroundColor: "transparent" }}
       transition={{ duration: 1.2, ease: "linear" }}
-      className="group relative border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]"
+      className="border-b border-border transition-colors duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-[#F0F2F5]"
     >
-      {/* 3px left border accent on hover */}
-      <td className="p-0 absolute inset-y-0 left-0 w-[3px] bg-[#205EA3] opacity-0 transition-opacity duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:opacity-100" />
-      
       <td className="py-2 pl-4">
         <Link 
           href={`/admin/orders/${order.id}`} 

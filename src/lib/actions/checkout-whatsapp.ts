@@ -19,8 +19,6 @@ export interface CheckoutWhatsAppInput {
   phone: string;
   address: string;
   city: string;
-  variantId?: string;
-  variantName?: string;
 }
 
 export async function getWhatsAppNumber(): Promise<string> {
@@ -55,8 +53,6 @@ export async function checkoutWithWhatsApp(
     phone,
     address,
     city,
-    variantId,
-    variantName,
   } = input;
 
   const rawAdminPhone = await getWhatsAppNumber();
@@ -77,7 +73,6 @@ export async function checkoutWithWhatsApp(
       totalAmount: total,
       paymentMethod: "whatsapp",
       startDate: new Date().toISOString(),
-      variantCombinationId: variantId,
     });
     if (orderRes.success && orderRes.orderId) {
       createdOrderId = orderRes.orderId;
@@ -97,7 +92,6 @@ export async function checkoutWithWhatsApp(
     address,
     city,
     orderId: createdOrderId,
-    variantName,
   });
 
   const url = `https://wa.me/${adminPhone}?text=${encodeURIComponent(text)}`;
