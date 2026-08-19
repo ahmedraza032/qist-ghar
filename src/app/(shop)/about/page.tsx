@@ -27,7 +27,7 @@ export default async function AboutPage() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-sm border border-border">
           <div className="space-y-6 text-[17px] leading-relaxed text-text-secondary font-sans">
-            {content.split("\n").map((line, i) => {
+            {content.split("\n").map((line: string, i: number) => {
               if (!line.trim()) return null; // Skip empty lines
               return <p key={i}>{line}</p>;
             })}
