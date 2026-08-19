@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { ScrollProgress } from "@/components/layout/scroll-progress";
 
 export default function ShopLayout({
   children,
@@ -9,6 +10,7 @@ export default function ShopLayout({
 }) {
   return (
     <div className="flex min-h-[100dvh] flex-col">
+      <ScrollProgress />
       <Header />
       <main className="flex-1 pb-16 md:pb-4">{children}</main>
       <Footer />

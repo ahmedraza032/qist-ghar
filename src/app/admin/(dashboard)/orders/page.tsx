@@ -4,11 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { Loader2, Search, ChevronLeft, ChevronRight, Plus, Filter } from "lucide-react";
 import { formatPKR, formatDate } from "@/lib/helpers/format";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { SearchInput, TableRow, TableHeader, AnimatedStatusBadge } from "@/components/admin/shared/admin-interactions";
 
 const PAGE_SIZE = 30;
 
@@ -144,12 +143,10 @@ export default function AdminOrdersPage() {
             showFilters ? "flex" : "hidden sm:flex"
           )}>
             <div className="relative flex-1 w-full sm:w-auto min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+              <SearchInput
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={setQuery}
                 placeholder="Search by customer, product, or order #..."
-                className="pl-9 w-full min-h-[44px] sm:h-10"
               />
             </div>
             <select
@@ -207,21 +204,21 @@ export default function AdminOrdersPage() {
                 <table className="w-full text-sm min-w-[1000px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/40 text-muted-foreground text-left whitespace-nowrap">
-                      <th className="py-2.5 px-3 font-semibold">Order</th>
-                      <th className="py-2.5 px-3 font-semibold">Customer</th>
-                      <th className="py-2.5 px-3 font-semibold">Contact</th>
-                      <th className="py-2.5 px-3 font-semibold">Product</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Total</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Down Payment</th>
-                      <th className="py-2.5 px-3 font-semibold">Payment</th>
-                      <th className="py-2.5 px-3 font-semibold">Date</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Status</th>
+                      <TableHeader className="py-2.5 px-3 font-semibold">Order</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold">Customer</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold">Contact</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold">Product</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold text-right">Total</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold text-right">Down Payment</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold">Payment</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold">Date</TableHeader>
+                      <TableHeader className="py-2.5 px-3 font-semibold text-right">Status</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
                     {paged.map((order) => {
                       return (
-                        <tr key={order.id} className="border-b border-border hover:bg-muted/30">
+                        <TableRow key={order.id}>
                           <td className="py-2.5 px-3">
                             <Link href={`/admin/orders/${order.id}`} className="font-mono text-sm text-primary hover:underline font-medium">
                               #{order.id.slice(0, 8)}
@@ -267,18 +264,17 @@ export default function AdminOrdersPage() {
                           <td className="py-2.5 px-3 text-muted-foreground whitespace-nowrap">{formatDate(order.created_at)}</td>
   
                           <td className="py-2.5 px-3 text-right">
-                            <Badge
+                            <AnimatedStatusBadge
+                              status={order.status}
+                              isPositiveState={order.status === "completed"}
                               variant={
                                 order.status === "completed"
                                   ? "success"
                                   : "warning"
                               }
-                              className="text-xs px-1.5 py-0.5"
-                            >
-                              {order.status}
-                            </Badge>
+                            />
                           </td>
-                        </tr>
+                        </TableRow>
                       );
                     })}
                   </tbody>
@@ -298,9 +294,11 @@ export default function AdminOrdersPage() {
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-xs text-muted-foreground font-medium mb-1">Status</span>
-                        <Badge variant={order.status === "completed" ? "success" : "warning"} className="text-xs px-1.5 py-0.5">
-                          {order.status}
-                        </Badge>
+                        <AnimatedStatusBadge 
+                          status={order.status}
+                          isPositiveState={order.status === "completed"}
+                          variant={order.status === "completed" ? "success" : "warning"} 
+                        />
                       </div>
                     </div>
                     <CardContent className="p-4 space-y-3">

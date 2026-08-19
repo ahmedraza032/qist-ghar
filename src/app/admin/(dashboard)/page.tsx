@@ -1,10 +1,11 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { DollarSign, Users, ShoppingCart, AlertTriangle } from "lucide-react";
 import { formatPKR } from "@/lib/helpers/format";
 import { outstandingForOrder } from "@/lib/helpers/installments";
 import Link from "next/link";
+import { StatCard } from "@/components/admin/dashboard/stat-card";
+import { RecentOrdersTable } from "@/components/admin/dashboard/recent-orders-table";
 
 export const dynamic = "force-dynamic";
 
@@ -63,113 +64,53 @@ export default async function AdminDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders Placed</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalOrdersCount}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fully Completed Orders</CardTitle>
-            <DollarSign className="h-4 w-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-600">{completedOrdersCount}</div>
-            <p className="text-xs text-muted-foreground">Completed this month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Orders</CardTitle>
-            <Users className="h-4 w-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{activeOrdersCountFinal}</div>
-            <p className="text-xs text-muted-foreground">Installments remaining</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Remaining Owed</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-amount" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amount">{formatPKR(totalRemainingOwed)}</div>
-            <p className="text-xs text-muted-foreground">Outstanding on this month&apos;s orders</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Orders Placed"
+          value={totalOrdersCount}
+          subtitle="This month"
+          icon={<ShoppingCart className="h-4 w-4 text-primary" />}
+          delayMs={0}
+        />
+        <StatCard
+          title="Fully Completed Orders"
+          value={completedOrdersCount}
+          subtitle="Completed this month"
+          icon={<DollarSign className="h-4 w-4 text-emerald-600" />}
+          valueClassName="text-emerald-600"
+          delayMs={40}
+        />
+        <StatCard
+          title="Active Orders"
+          value={activeOrdersCountFinal}
+          subtitle="Installments remaining"
+          icon={<Users className="h-4 w-4 text-amber-600" />}
+          valueClassName="text-amber-600"
+          delayMs={80}
+        />
+        <StatCard
+          title="Total Remaining Owed"
+          value={totalRemainingOwed}
+          formatType="currency"
+          subtitle="Outstanding on this month's orders"
+          icon={<AlertTriangle className="h-4 w-4 text-amount" />}
+          valueClassName="text-amount"
+          delayMs={120}
+        />
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Orders</CardTitle>
-          <Link href="/admin/orders" className="text-sm text-primary hover:underline">
+          <Link 
+            href="/admin/orders" 
+            className="relative text-sm font-medium text-primary group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm inline-block"
+          >
             View all
+            <span className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-primary origin-left scale-x-0 transition-transform duration-150 ease-[cubic-bezier(0,0,0.2,1)] group-hover:scale-x-100" />
           </Link>
         </CardHeader>
         <CardContent>
-          {orders.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">No orders yet.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th className="text-left py-2 font-medium">Order</th>
-                    <th className="text-left py-2 font-medium">Customer</th>
-                    <th className="text-left py-2 font-medium">Product</th>
-                    <th className="text-right py-2 font-medium">Amount</th>
-                    <th className="text-right py-2 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order: any) => (
-                    <tr key={order.id} className="border-b border-border">
-                      <td className="py-2">
-                        <Link href={`/admin/orders/${order.id}`} className="font-mono text-xs hover:text-primary">
-                          #{order.id.slice(0, 8)}
-                        </Link>
-                      </td>
-                      <td className="py-2 text-xs font-medium">
-                        <Link
-                          href={`/admin/customers/${order.customer_id}`}
-                          className="hover:text-primary hover:underline"
-                          title="View customer ledger"
-                        >
-                          {order.customer?.full_name || "Customer"}
-                        </Link>
-                      </td>
-                      <td className="py-2 text-xs truncate max-w-[150px]">
-                        {order.product?.name || "—"}
-                      </td>
-                      <td className="py-2 text-right text-xs font-medium">
-                        {formatPKR(order.total_amount)}
-                      </td>
-                      <td className="py-2 text-right">
-                        <Badge
-                          variant={
-                            order.status === "completed"
-                              ? "success"
-                              : "warning"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <RecentOrdersTable orders={orders} />
         </CardContent>
       </Card>
     </div>

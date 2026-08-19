@@ -4,14 +4,15 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "motion/react";
 import { Search, SlidersHorizontal, Grid3X3, List, ChevronDown, X } from "lucide-react";
+import { TextShimmerWave } from "@/components/core/text-shimmer-wave";
 import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
-import { calculateInstallment } from "@/lib/helpers/installments";
+import { calculateInstallment, getAllInstallmentOptions } from "@/lib/helpers/installments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 
 interface Product {
@@ -66,6 +67,17 @@ export function ProductListingClient({
   });
   const [showFilters, setShowFilters] = React.useState(false);
 
+  React.useEffect(() => {
+    setSearch(searchParams.get("q") || "");
+    setSelectedCategory(searchParams.get("category") || "");
+    setSelectedBrand(searchParams.get("brand") || "");
+    setSortBy(searchParams.get("sort") || "newest");
+    setPriceRange({
+      min: searchParams.get("min_price") || "",
+      max: searchParams.get("max_price") || "",
+    });
+  }, [searchParams]);
+
   const filteredProducts = React.useMemo(() => {
     let result = [...products];
 
@@ -79,9 +91,15 @@ export function ProductListingClient({
     }
 
     if (selectedCategory) {
-      result = result.filter(
-        (p) => p.category?.slug === selectedCategory
-      );
+      if (selectedCategory === "home-appliances") {
+        result = result.filter(
+          (p) => ["air-conditioners", "washing-machines"].includes(p.category?.slug || "")
+        );
+      } else {
+        result = result.filter(
+          (p) => p.category?.slug === selectedCategory
+        );
+      }
     }
 
     if (selectedBrand) {
@@ -125,7 +143,7 @@ export function ProductListingClient({
   const activeFilters = [
     selectedCategory && {
       key: "category",
-      label: categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory,
+      label: selectedCategory === "home-appliances" ? "Home Appliances" : (categories.find((c) => c.slug === selectedCategory)?.name || selectedCategory),
     },
     selectedBrand && {
       key: "brand",
@@ -150,24 +168,30 @@ export function ProductListingClient({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 bg-bg min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Products</h1>
-          <p className="text-muted-foreground mt-1">
+          <motion.h1
+            className="font-heading text-3xl font-semibold bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] text-transparent bg-clip-text inline-block"
+            animate={{ backgroundPosition: ["200% center", "-200% center"] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+          >
+            Products
+          </motion.h1>
+          <p className="text-text-secondary mt-1 text-sm">
             {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""} available
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative w-full md:w-80 group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-tertiary" />
           <Input
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-surface border-border rounded-[var(--radius-control)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 text-text-primary placeholder:text-text-tertiary transition-all"
           />
         </div>
       </div>
@@ -178,38 +202,58 @@ export function ProductListingClient({
           variant="outline"
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className="gap-2 lg:hidden"
+          className="gap-2 lg:hidden bg-surface border-border text-text-primary rounded-[var(--radius-control)] hover:bg-surface-alt"
         >
           <SlidersHorizontal className="h-4 w-4" />
           Filters
           {activeFilters.length > 0 && (
-            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">
+            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs bg-primary-subtle text-primary border-none">
               {activeFilters.length}
             </Badge>
           )}
         </Button>
 
+        {/* Price Range */}
+        <div className="hidden md:flex items-center gap-2 ml-auto mr-1">
+          <span className="text-sm font-medium text-text-secondary mr-1">Price (PKR)</span>
+          <Input
+            placeholder="Min"
+            type="number"
+            value={priceRange.min}
+            onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))}
+            className="h-9 w-20 bg-surface border-border rounded-[var(--radius-control)] text-sm focus-visible:ring-2 focus-visible:ring-primary text-text-primary placeholder:text-text-tertiary"
+          />
+          <span className="text-text-tertiary">-</span>
+          <Input
+            placeholder="Max"
+            type="number"
+            value={priceRange.max}
+            onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))}
+            className="h-9 w-20 bg-surface border-border rounded-[var(--radius-control)] text-sm focus-visible:ring-2 focus-visible:ring-primary text-text-primary placeholder:text-text-tertiary"
+          />
+        </div>
+
         {/* Sort */}
-        <div className="relative ml-auto">
+        <div className="relative">
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 pr-8 text-sm appearance-none cursor-pointer"
+            className="h-9 rounded-[var(--radius-control)] border border-border bg-surface px-3 pr-8 text-sm appearance-none cursor-pointer text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           >
             <option value="newest">Newest</option>
             <option value="price_low">Price: Low to High</option>
             <option value="price_high">Price: High to Low</option>
           </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-muted-foreground" />
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none text-text-secondary" />
         </div>
 
         {/* View toggle */}
-        <div className="hidden md:flex items-center border border-input rounded-md">
+        <div className="hidden md:flex items-center border border-border rounded-[var(--radius-control)] overflow-hidden bg-surface">
           <button
             onClick={() => setView("grid")}
             className={cn(
-              "p-2",
-              view === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+              "p-2 transition-colors",
+              view === "grid" ? "bg-primary-subtle text-primary" : "text-text-secondary hover:bg-surface-alt"
             )}
           >
             <Grid3X3 className="h-4 w-4" />
@@ -217,8 +261,8 @@ export function ProductListingClient({
           <button
             onClick={() => setView("list")}
             className={cn(
-              "p-2",
-              view === "list" ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+              "p-2 transition-colors",
+              view === "list" ? "bg-primary-subtle text-primary" : "text-text-secondary hover:bg-surface-alt"
             )}
           >
             <List className="h-4 w-4" />
@@ -230,11 +274,11 @@ export function ProductListingClient({
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 mb-6">
           {activeFilters.map((f) => (
-            <Badge key={f.key} variant="secondary" className="gap-1 pr-1">
+            <Badge key={f.key} variant="secondary" className="gap-1 pr-1 bg-surface border border-border text-text-primary rounded-full hover:bg-surface-alt font-sans">
               {f.label}
               <button
                 onClick={() => clearFilter(f.key)}
-                className="ml-1 rounded-full hover:bg-muted p-0.5"
+                className="ml-1 rounded-full hover:bg-border p-0.5"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -242,7 +286,7 @@ export function ProductListingClient({
           ))}
           <button
             onClick={clearAll}
-            className="text-sm text-muted-foreground hover:text-foreground ml-2"
+            className="text-sm text-text-secondary hover:text-text-primary transition-colors ml-2 font-medium"
           >
             Clear all
           </button>
@@ -252,18 +296,18 @@ export function ProductListingClient({
       <div className="flex gap-8">
         {/* Sidebar Filters — desktop */}
         <aside className="hidden lg:block w-64 shrink-0">
-          <div className="sticky top-24 space-y-6">
+          <div className="sticky top-24 space-y-8">
             {/* Categories */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">Category</h3>
+              <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Category</h3>
               <div className="space-y-1">
                 <button
                   onClick={() => setSelectedCategory("")}
                   className={cn(
-                    "block w-full text-left px-2 py-1.5 rounded text-sm",
+                    "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                     !selectedCategory
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:bg-muted"
+                      ? "bg-primary-subtle text-primary font-medium"
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
                   )}
                 >
                   All Categories
@@ -273,10 +317,10 @@ export function ProductListingClient({
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.slug)}
                     className={cn(
-                      "block w-full text-left px-2 py-1.5 rounded text-sm",
+                      "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                       selectedCategory === cat.slug
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-muted"
+                        ? "bg-primary-subtle text-primary font-medium"
+                        : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
                     )}
                   >
                     {cat.name}
@@ -287,15 +331,15 @@ export function ProductListingClient({
 
             {/* Brands */}
             <div>
-              <h3 className="text-sm font-semibold mb-3">Brand</h3>
+              <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Brand</h3>
               <div className="space-y-1">
                 <button
                   onClick={() => setSelectedBrand("")}
                   className={cn(
-                    "block w-full text-left px-2 py-1.5 rounded text-sm",
+                    "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                     !selectedBrand
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:bg-muted"
+                      ? "bg-primary-subtle text-primary font-medium"
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
                   )}
                 >
                   All Brands
@@ -305,10 +349,10 @@ export function ProductListingClient({
                     key={brand.id}
                     onClick={() => setSelectedBrand(brand.name)}
                     className={cn(
-                      "block w-full text-left px-2 py-1.5 rounded text-sm",
+                      "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
                       selectedBrand === brand.name
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-muted"
+                        ? "bg-primary-subtle text-primary font-medium"
+                        : "text-text-secondary hover:text-text-primary hover:bg-surface-alt"
                     )}
                   >
                     {brand.name}
@@ -317,30 +361,7 @@ export function ProductListingClient({
               </div>
             </div>
 
-            {/* Price Range */}
-            <div>
-              <h3 className="text-sm font-semibold mb-3">Price Range (PKR)</h3>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Min"
-                  type="number"
-                  value={priceRange.min}
-                  onChange={(e) =>
-                    setPriceRange((p) => ({ ...p, min: e.target.value }))
-                  }
-                  className="h-9"
-                />
-                <Input
-                  placeholder="Max"
-                  type="number"
-                  value={priceRange.max}
-                  onChange={(e) =>
-                    setPriceRange((p) => ({ ...p, max: e.target.value }))
-                  }
-                  className="h-9"
-                />
-              </div>
-            </div>
+            {/* Price Range moved to toolbar */}
           </div>
         </aside>
 
@@ -348,24 +369,24 @@ export function ProductListingClient({
         {showFilters && (
           <div className="fixed inset-0 z-50 bg-black/50 lg:hidden" onClick={() => setShowFilters(false)}>
             <div
-              className="absolute right-0 top-0 bottom-0 w-80 bg-background p-6 overflow-y-auto"
+              className="absolute right-0 top-0 bottom-0 w-80 bg-surface p-6 overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-semibold">Filters</h2>
-                <button onClick={() => setShowFilters(false)}>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="font-heading font-semibold text-lg text-text-primary">Filters</h2>
+                <button onClick={() => setShowFilters(false)} className="text-text-secondary hover:text-text-primary">
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div>
-                  <h3 className="text-sm font-semibold mb-3">Category</h3>
+                  <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Category</h3>
                   <div className="space-y-1">
                     <button
                       onClick={() => { setSelectedCategory(""); setShowFilters(false); }}
                       className={cn(
-                        "block w-full text-left px-2 py-1.5 rounded text-sm",
-                        !selectedCategory ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted"
+                        "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
+                        !selectedCategory ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                       )}
                     >
                       All Categories
@@ -375,8 +396,8 @@ export function ProductListingClient({
                         key={cat.id}
                         onClick={() => { setSelectedCategory(cat.slug); setShowFilters(false); }}
                         className={cn(
-                          "block w-full text-left px-2 py-1.5 rounded text-sm",
-                          selectedCategory === cat.slug ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted"
+                          "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
+                          selectedCategory === cat.slug ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                         )}
                       >
                         {cat.name}
@@ -385,13 +406,13 @@ export function ProductListingClient({
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold mb-3">Brand</h3>
+                  <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Brand</h3>
                   <div className="space-y-1">
                     <button
                       onClick={() => { setSelectedBrand(""); setShowFilters(false); }}
                       className={cn(
-                        "block w-full text-left px-2 py-1.5 rounded text-sm",
-                        !selectedBrand ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted"
+                        "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-all active:scale-[0.98]",
+                        !selectedBrand ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                       )}
                     >
                       All Brands
@@ -401,8 +422,8 @@ export function ProductListingClient({
                         key={brand.id}
                         onClick={() => { setSelectedBrand(brand.name); setShowFilters(false); }}
                         className={cn(
-                          "block w-full text-left px-2 py-1.5 rounded text-sm",
-                          selectedBrand === brand.name ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:bg-muted"
+                          "block w-full text-left px-3 py-2 rounded-[var(--radius-control)] text-sm font-sans transition-colors",
+                          selectedBrand === brand.name ? "bg-primary-subtle text-primary font-medium" : "text-text-secondary hover:bg-surface-alt"
                         )}
                       >
                         {brand.name}
@@ -411,10 +432,10 @@ export function ProductListingClient({
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold mb-3">Price Range (PKR)</h3>
+                  <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">Price Range (PKR)</h3>
                   <div className="flex gap-2">
-                    <Input placeholder="Min" type="number" value={priceRange.min} onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))} className="h-9" />
-                    <Input placeholder="Max" type="number" value={priceRange.max} onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))} className="h-9" />
+                    <Input placeholder="Min" type="number" value={priceRange.min} onChange={(e) => setPriceRange((p) => ({ ...p, min: e.target.value }))} className="h-9 bg-surface border-border rounded-[var(--radius-control)] text-text-primary" />
+                    <Input placeholder="Max" type="number" value={priceRange.max} onChange={(e) => setPriceRange((p) => ({ ...p, max: e.target.value }))} className="h-9 bg-surface border-border rounded-[var(--radius-control)] text-text-primary" />
                   </div>
                 </div>
               </div>
@@ -429,23 +450,75 @@ export function ProductListingClient({
               title="No products found"
               description="Try adjusting your filters or search query."
               action={
-                <Button variant="outline" onClick={clearAll}>
+                <Button variant="outline" onClick={clearAll} className="bg-surface border-border rounded-[var(--radius-control)] text-text-primary hover:bg-surface-alt">
                   Clear Filters
                 </Button>
               }
             />
           ) : view === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <motion.div 
+              key={`grid-${selectedCategory}-${search}-${sortBy}`}
+              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 },
+                },
+              }}
+            >
               {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <motion.div
+                  key={product.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 40, filter: 'blur(4px)' },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      filter: 'blur(0px)',
+                      transition: { duration: 0.8, type: 'spring', bounce: 0.3 },
+                    },
+                  }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
-            <div className="space-y-4">
+            <motion.div 
+              key={`list-${selectedCategory}-${search}-${sortBy}`}
+              className="space-y-4"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 },
+                },
+              }}
+            >
               {filteredProducts.map((product) => (
-                <ProductListCard key={product.id} product={product} />
+                <motion.div
+                  key={product.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 40, filter: 'blur(4px)' },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      filter: 'blur(0px)',
+                      transition: { duration: 0.8, type: 'spring', bounce: 0.3 },
+                    },
+                  }}
+                >
+                  <ProductListCard product={product} />
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
@@ -455,13 +528,15 @@ export function ProductListingClient({
 
 function ProductCard({ product }: { product: Product }) {
   const installment = calculateInstallment(product.base_price, 3);
+  const planOptions = getAllInstallmentOptions(product.base_price);
 
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group rounded-lg border border-border bg-card overflow-hidden hover:shadow-md transition-shadow"
+      className="group interactive-card-green flex flex-col rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-xs)]"
     >
-      <div className="relative aspect-square bg-muted overflow-hidden">
+      <div className="shimmer-overlay" />
+      <div className="relative aspect-square overflow-hidden rounded-[var(--radius-image)] m-2 shrink-0 z-10">
         {product.images?.[0] ? (
           <Image
             src={product.images[0]}
@@ -471,35 +546,55 @@ function ProductCard({ product }: { product: Product }) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+          <div className="flex items-center justify-center h-full bg-surface-alt text-text-tertiary text-sm">
             No image
           </div>
         )}
         {product.stock_qty <= 0 && (
-          <Badge variant="destructive" className="absolute top-2 right-2">
+          <Badge variant="destructive" className="absolute top-2 right-2 rounded-full px-3 py-1">
             Out of Stock
           </Badge>
         )}
       </div>
-      <div className="p-4">
+      <div className="p-4 pt-3 flex flex-col flex-1">
         {product.brand && (
-          <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+          <p className="text-text-tertiary text-[12px] uppercase tracking-[0.04em] mb-1 font-sans font-medium">
             {product.brand.name}
           </p>
         )}
-        <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-medium font-sans text-text-primary text-[15px] leading-snug line-clamp-2 transition-colors relative z-10">
           {product.name}
         </h3>
-        <div className="mt-2">
-          <p className="text-lg font-bold">{formatPKR(product.base_price)}</p>
-          <p className="text-xs text-primary font-medium mt-0.5">
-            From {formatPKR(installment.monthlyPayment)}/month
+        <div className="mt-auto pt-4 relative z-10">
+          <p className="font-heading font-medium text-secondary-text tabular-nums text-xl">
+            {formatPKR(product.base_price)}
+          </p>
+          
+          {/* Signature Element: 4-tick bar representing plans */}
+          <div className="flex items-center gap-[4px] mt-1.5 mb-2">
+            {planOptions.map((plan, i) => (
+              <div
+                key={plan.duration}
+                className={cn(
+                  "w-[3px] h-[12px] rounded-sm",
+                  i === 0 ? "bg-primary" : "border-[1.5px] border-border-strong bg-transparent"
+                )}
+              />
+            ))}
+          </div>
+
+          <p className="text-[13px] text-text-secondary font-sans">
+            From <span className="font-medium tabular-nums text-text-primary">{formatPKR(installment.monthlyPayment)}/mo</span>
           </p>
         </div>
-        <div className="mt-3">
-          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-medium">
-            Buy on Installments
-          </span>
+        <div className="mt-4 pt-1">
+          <motion.span 
+            className="text-[13px] border-[1.5px] border-border-strong text-text-primary px-3 py-2 rounded-[var(--radius-control)] font-medium transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] w-full flex items-center justify-center group-hover:border-primary group-hover:text-primary group-hover:bg-primary-subtle hover:!bg-primary hover:!text-white hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)] active:scale-[0.98]"
+            whileHover="hover"
+            initial="initial"
+          >
+            <TextShimmerWave>Buy on Installments</TextShimmerWave>
+          </motion.span>
         </div>
       </div>
     </Link>
@@ -508,46 +603,73 @@ function ProductCard({ product }: { product: Product }) {
 
 function ProductListCard({ product }: { product: Product }) {
   const installment = calculateInstallment(product.base_price, 3);
+  const planOptions = getAllInstallmentOptions(product.base_price);
 
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group flex gap-4 rounded-lg border border-border bg-card overflow-hidden hover:shadow-md transition-shadow p-4"
+      className="group interactive-card-green flex flex-col sm:flex-row gap-4 rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-xs)] p-3"
     >
-      <div className="relative w-32 h-32 bg-muted rounded-md overflow-hidden shrink-0">
+      <div className="shimmer-overlay" />
+      <div className="relative w-full sm:w-48 h-48 sm:h-auto rounded-[var(--radius-image)] overflow-hidden shrink-0 z-10">
         {product.images?.[0] ? (
           <Image
             src={product.images[0]}
             alt={product.name}
             fill
-            className="object-cover"
-            sizes="128px"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 640px) 100vw, 200px"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
+          <div className="flex items-center justify-center h-full bg-surface-alt text-text-tertiary text-sm">
             No image
           </div>
         )}
       </div>
-      <div className="flex-1 min-w-0">
-        {product.brand && (
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {product.brand.name}
-          </p>
-        )}
-        <h3 className="font-medium group-hover:text-primary transition-colors mt-0.5">
-          {product.name}
-        </h3>
-        <div className="mt-2 flex items-baseline gap-3">
-          <p className="text-xl font-bold">{formatPKR(product.base_price)}</p>
-          <p className="text-sm text-primary font-medium">
-            From {formatPKR(installment.monthlyPayment)}/mo
-          </p>
+      <div className="flex flex-col flex-1 py-1 pr-2">
+        <div>
+          {product.brand && (
+            <p className="text-text-tertiary text-[12px] uppercase tracking-[0.04em] mb-1 font-sans font-medium">
+              {product.brand.name}
+            </p>
+          )}
+          <h3 className="font-medium font-sans text-text-primary text-[16px] leading-snug transition-colors relative z-10">
+            {product.name}
+          </h3>
         </div>
-        <div className="mt-2">
-          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-medium">
-            Buy on Installments
-          </span>
+        
+        <div className="mt-auto pt-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4 relative z-10">
+          <div>
+            <p className="font-heading font-medium text-secondary-text tabular-nums text-2xl">
+              {formatPKR(product.base_price)}
+            </p>
+            
+            <div className="flex items-center gap-[4px] mt-2 mb-2">
+              {planOptions.map((plan, i) => (
+                <div
+                  key={plan.duration}
+                  className={cn(
+                    "w-[3px] h-[12px] rounded-sm",
+                    i === 0 ? "bg-primary" : "border-[1.5px] border-border-strong bg-transparent"
+                  )}
+                />
+              ))}
+            </div>
+
+            <p className="text-[13px] text-text-secondary font-sans">
+              From <span className="font-medium tabular-nums text-text-primary">{formatPKR(installment.monthlyPayment)}/mo</span>
+            </p>
+          </div>
+          
+          <div className="sm:self-end">
+            <motion.span 
+              className="text-[13px] border-[1.5px] border-border-strong text-text-primary px-4 py-2 rounded-[var(--radius-control)] font-medium transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] inline-block w-full sm:w-auto text-center group-hover:border-primary group-hover:text-primary group-hover:bg-primary-subtle hover:!bg-primary hover:!text-white hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)] active:scale-[0.98]"
+              whileHover="hover"
+              initial="initial"
+            >
+              <TextShimmerWave>Buy on Installments</TextShimmerWave>
+            </motion.span>
+          </div>
         </div>
       </div>
     </Link>

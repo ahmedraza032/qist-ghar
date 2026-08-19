@@ -2,6 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, Truck, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,7 +13,7 @@ import type { InstallmentBreakdown } from "@/lib/helpers/installments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { SlidingNumber } from "@/components/shop/sliding-number";
 
 interface Spec {
   [key: string]: string;
@@ -114,63 +116,63 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 bg-bg min-h-screen">
       {/* Breadcrumb */}
-      <nav className="text-sm text-muted-foreground mb-6">
-        <a href="/products" className="hover:text-foreground">Products</a>
-        <span className="mx-2">/</span>
+      <nav className="font-sans text-[14px] text-text-secondary mb-8">
+        <a href="/products" className="hover:text-text-primary transition-colors">Products</a>
+        <span className="mx-2 text-text-tertiary">/</span>
         {product.category && (
           <>
-            <a href={`/products?category=${product.category.slug}`} className="hover:text-foreground">
+            <a href={`/products?category=${product.category.slug}`} className="hover:text-text-primary transition-colors">
               {product.category.name}
             </a>
-            <span className="mx-2">/</span>
+            <span className="mx-2 text-text-tertiary">/</span>
           </>
         )}
-        <span className="text-foreground">{product.name}</span>
+        <span className="text-text-primary">{product.name}</span>
       </nav>
 
-      <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Image Gallery */}
         <div>
-          <div className="relative aspect-square bg-muted rounded-lg overflow-hidden">
+          <div className="relative aspect-square bg-surface rounded-[var(--radius-card)] shadow-[var(--shadow-xs)] overflow-hidden border border-border">
             {product.images?.[selectedImage] ? (
               <Image
                 src={product.images[selectedImage]}
                 alt={product.name}
                 fill
-                className="object-contain p-4"
+                className="object-contain p-6"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="flex items-center justify-center h-full text-text-tertiary font-sans">
                 No image available
               </div>
             )}
             {!inStock && (
-              <Badge variant="destructive" className="absolute top-3 left-3">
+              <Badge variant="destructive" className="absolute top-4 left-4 rounded-full px-3 py-1 text-xs">
                 Out of Stock
               </Badge>
             )}
           </div>
           {product.images && product.images.length > 1 && (
-            <div className="flex gap-2 mt-3 overflow-x-auto">
+            <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
               {product.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
                   className={cn(
-                    "relative w-16 h-16 rounded-md border-2 bg-muted overflow-hidden shrink-0",
-                    i === selectedImage ? "border-primary" : "border-transparent hover:border-border"
+                    "relative w-[72px] h-[72px] rounded-[var(--radius-image)] border-2 bg-surface overflow-hidden shrink-0 transition-all",
+                    i === selectedImage ? "border-primary shadow-[var(--shadow-xs)]" : "border-transparent hover:border-border"
                   )}
                 >
                   <Image
                     src={img}
                     alt={`${product.name} ${i + 1}`}
                     fill
-                    className="object-cover"
-                    sizes="64px"
+                    className="object-cover p-1"
+                    sizes="72px"
                   />
                 </button>
               ))}
@@ -179,23 +181,25 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
         </div>
 
         {/* Product Info */}
-        <div>
+        <div className="flex flex-col">
           {product.brand && (
-            <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">
+            <p className="text-[12px] text-text-tertiary uppercase tracking-[0.04em] mb-2 font-sans font-medium">
               {product.brand.name}
             </p>
           )}
-          <h1 className="text-2xl md:text-3xl font-bold">{product.name}</h1>
-          <p className="text-3xl font-bold text-primary mt-3">
-            {formatPKR(effectiveBasePrice)}
+          <h1 className="font-heading font-semibold text-text-primary text-[28px] leading-tight">
+            {product.name}
+          </h1>
+          <p className="font-heading font-medium text-secondary-text text-[32px] tabular-nums mt-3 flex items-center">
+            Rs <SlidingNumber value={effectiveBasePrice.toLocaleString("en-US")} />
           </p>
 
           {/* Variant Selectors */}
           {hasVariants && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-8 space-y-5">
               {attrs.map((attr) => (
                 <div key={attr.id}>
-                  <h3 className="text-sm font-semibold mb-2">{attr.name}</h3>
+                  <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-3">{attr.name}</h3>
                   <div className="flex flex-wrap gap-2">
                     {attr.options.map((opt: any) => {
                       const isSelected = selectedVariants[attr.id] === opt.id;
@@ -204,10 +208,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                           key={opt.id}
                           onClick={() => setSelectedVariants(prev => ({ ...prev, [attr.id]: opt.id }))}
                           className={cn(
-                            "px-4 py-2 text-sm rounded-md border font-medium transition-colors",
+                            "px-4 py-2 text-sm rounded-[var(--radius-control)] border transition-colors font-sans font-medium",
                             isSelected
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-input hover:border-primary/50 hover:bg-muted"
+                              ? "border-primary bg-primary-subtle text-primary"
+                              : "border-border bg-surface text-text-secondary hover:bg-surface-alt hover:text-text-primary"
                           )}
                         >
                           {opt.value}
@@ -221,84 +225,94 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           )}
 
           {/* Installment Plan Selector */}
-          <div className="mt-8">
-            <h3 className="text-sm font-semibold mb-3">Choose your installment plan</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-              {DURATIONS.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setSelectedDuration(d)}
-                  className={cn(
-                    "min-h-[44px] px-3 py-2 rounded-md border text-sm font-medium transition-colors",
-                    d === selectedDuration
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-input hover:border-primary/50 hover:bg-muted"
-                  )}
-                >
-                  {d} mo
-                </button>
-              ))}
+          <div className="mt-10">
+            <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-6">Choose your installment plan</h3>
+            
+            {/* Installment Plan Grid */}
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-8">
+              {allOptions.map((opt) => {
+                const isActive = opt.duration === selectedDuration;
+                return (
+                  <button
+                    key={opt.duration}
+                    onClick={() => setSelectedDuration(opt.duration)}
+                    className={cn(
+                      "group flex flex-col items-center justify-center py-3 px-1 sm:p-3 rounded-[var(--radius-card)] border transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] outline-none active:animate-press-spring motion-reduce:transition-none motion-reduce:hover:transform-none motion-reduce:active:animate-none hover:-translate-y-[2px] hover:shadow-[var(--shadow-sm)]",
+                      isActive 
+                        ? "border-primary bg-primary-subtle shadow-[var(--shadow-sm)]" 
+                        : "border-border bg-surface hover:border-primary"
+                    )}
+                  >
+                    <span className={cn(
+                      "font-heading tabular-nums transition-colors",
+                      isActive ? "text-[16px] sm:text-[18px] text-primary font-semibold" : "text-[15px] sm:text-[16px] text-text-secondary font-medium group-hover:text-text-primary"
+                    )}>
+                      {opt.duration}mo
+                    </span>
+                    <span className={cn(
+                      "font-sans font-medium text-[11px] sm:text-[12px] tabular-nums mt-1 transition-colors",
+                      isActive ? "text-primary/80" : "text-text-tertiary group-hover:text-text-secondary"
+                    )}>
+                      {formatPKR(opt.monthlyPayment)}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <Card>
-              <CardContent className="p-4 space-y-5">
-                <div className="flex justify-between text-sm sm:text-base">
-                  <span className="text-muted-foreground">Duration</span>
-                  <span className="font-medium">{selectedDuration} x {formatPKR(breakdown.monthlyPayment)}</span>
-                </div>
+            {/* Duration/Down Payment summary row */}
+            <div className="bg-surface-alt rounded-[var(--radius-control)] p-4 space-y-4">
+              <div className="flex justify-between items-center text-[15px]">
+                <span className="text-text-secondary font-sans">Duration</span>
+                <span className="font-heading font-medium tabular-nums text-text-primary text-[16px] flex items-center gap-1">
+                  {selectedDuration} x Rs <SlidingNumber value={breakdown.monthlyPayment.toLocaleString("en-US")} />
+                </span>
+              </div>
 
-                <div className="space-y-2 py-1">
-                  <div className="flex justify-between items-center text-sm sm:text-base gap-2">
-                    <span className="text-muted-foreground whitespace-nowrap">Down Payment</span>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-xs text-muted-foreground font-mono">Rs</span>
-                      <Input
-                        type="number"
-                        min={minDownPayment}
-                        className="min-h-[44px] text-[16px] sm:text-sm w-24 sm:w-28 text-right font-semibold text-foreground [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        value={customDownPayment === "" ? activeDownPayment : customDownPayment}
-                        onChange={(e) => {
-                          const val = e.target.value === "" ? "" : parseFloat(e.target.value);
-                          setCustomDownPayment(val);
-                        }}
-                        onBlur={() => {
-                          if (typeof customDownPayment === "number" && customDownPayment < minDownPayment) {
-                            setCustomDownPayment(minDownPayment);
-                          }
-                        }}
-                      />
-                    </div>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[15px] gap-2">
+                  <span className="text-text-secondary font-sans whitespace-nowrap">Down Payment</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-text-tertiary font-sans text-sm">Rs</span>
+                    <Input
+                      type="number"
+                      min={minDownPayment}
+                      className="h-10 w-28 text-right font-sans font-medium text-text-primary tabular-nums bg-surface border-border rounded-[var(--radius-control)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      value={customDownPayment === "" ? activeDownPayment : customDownPayment}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? "" : parseFloat(e.target.value);
+                        setCustomDownPayment(val);
+                      }}
+                      onBlur={() => {
+                        if (typeof customDownPayment === "number" && customDownPayment < minDownPayment) {
+                          setCustomDownPayment(minDownPayment);
+                        }
+                      }}
+                    />
                   </div>
-                  {typeof customDownPayment === "number" && customDownPayment < minDownPayment && (
-                    <div className="text-[11px] text-destructive text-right">
-                      Min {MIN_DOWN_PAYMENT_PCT}% required
-                    </div>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
+                {typeof customDownPayment === "number" && customDownPayment < minDownPayment && (
+                  <div className="text-[12px] text-destructive text-right font-sans font-medium mt-1">
+                    Min {MIN_DOWN_PAYMENT_PCT}% required
+                  </div>
+                )}
+              </div>
+            </div>
 
-            {/* All plans quick view */}
-            <div className="mt-4 overflow-x-auto w-full pb-2">
-              <table className="w-full text-sm min-w-[300px]">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground whitespace-nowrap">
-                    <th className="text-left py-2 font-medium">Duration</th>
-                    <th className="text-right py-2 font-medium">Total Installments</th>
-                  </tr>
-                </thead>
+            {/* Installment breakdown table */}
+            <div className="mt-8 bg-surface rounded-[var(--radius-card)] shadow-[var(--shadow-xs)] overflow-hidden">
+              <table className="w-full text-sm">
                 <tbody>
                   {allOptions.map((opt) => (
                     <tr
                       key={opt.duration}
-                      className={cn(
-                        "border-b border-border cursor-pointer hover:bg-muted/50",
-                        opt.duration === selectedDuration && "bg-primary/5"
-                      )}
+                      className="border-b border-border last:border-b-0 cursor-pointer transition-colors hover:bg-surface-alt group"
                       onClick={() => setSelectedDuration(opt.duration)}
                     >
-                      <td className="py-2">{opt.duration} months</td>
-                      <td className="py-2 text-right font-medium">
+                      <td className="py-4 pl-4 font-sans text-text-secondary group-hover:text-text-primary transition-colors">
+                        {opt.duration} months
+                      </td>
+                      <td className="py-4 pr-4 text-right font-heading font-medium tabular-nums text-text-primary text-[15px]">
                         {formatPKR(opt.monthlyPayment)} x {opt.duration}
                       </td>
                     </tr>
@@ -309,149 +323,216 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           </div>
 
           {/* Buy on Installments CTA */}
-          <div className="mt-6">
+          <div className="mt-8 mb-4">
             <Button
               size="lg"
-              className="w-full gap-2"
+              className="w-full gap-2 bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] shadow-[var(--shadow-sm)] font-medium h-14 text-[16px] border-none"
               disabled={!inStock || !allVariantsSelected}
               onClick={handleBuyNow}
             >
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-5 w-5" />
               {!allVariantsSelected
                 ? "Select Options"
                 : inStock
-                  ? `Buy on Installments — ${formatPKR(breakdown.monthlyPayment)}/mo`
+                  ? <span className="flex items-center gap-1">Buy on Installments — Rs <SlidingNumber value={breakdown.monthlyPayment.toLocaleString("en-US")} />/mo</span>
                   : "Out of Stock"}
             </Button>
           </div>
 
           {allVariantsSelected && !inStock && (
-            <p className="text-sm text-destructive mt-2 text-center">
+            <p className="text-sm text-destructive mt-2 text-center font-sans font-medium">
               This product combination is currently out of stock.
             </p>
           )}
 
-          <div className="flex items-center gap-4 justify-center mt-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="h-3 w-3" /> Secure Payment
+          <div className="flex items-center gap-6 justify-center mt-2 text-[13px] text-text-tertiary font-sans">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="h-[14px] w-[14px]" /> Secure Payment
             </span>
-            <span className="flex items-center gap-1">
-              <Truck className="h-3 w-3" /> Free Delivery
+            <span className="flex items-center gap-1.5">
+              <Truck className="h-[14px] w-[14px]" /> Free Delivery
             </span>
           </div>
         </div>
       </div>
 
       {/* Tabs: Specs / Description */}
-      <div className="mt-12">
-        <div className="flex border-b border-border gap-0">
-          {(["specs", "description"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "px-4 py-3 text-sm font-medium border-b-2 transition-colors",
-                activeTab === tab
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {tab === "specs" ? "Specifications" : "Description"}
-            </button>
-          ))}
+      <div className="mt-16 md:mt-24">
+        <div className="flex border-b border-border gap-6 relative">
+          {(["specs", "description"] as const).map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "pb-3 px-2 text-[15px] font-sans font-medium transition-colors relative top-[1px]",
+                  isActive
+                    ? "text-primary"
+                    : "text-text-secondary hover:text-text-primary"
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-x-0 bottom-0 h-[2px] bg-primary"
+                    initial={false}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                  />
+                )}
+                {tab === "specs" ? "Specifications" : "Description"}
+              </button>
+            );
+          })}
         </div>
-        <div className="mt-6 max-w-2xl">
-          {activeTab === "specs" ? (
-            product.specs && Object.keys(product.specs).length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[300px]">
-                <tbody>
-                  {Object.entries(product.specs).map(([key, value]) => (
-                    <tr key={key} className="border-b border-border">
-                      <td className="py-3 pr-6 text-sm text-muted-foreground font-medium w-1/3">
-                        {key}
-                      </td>
-                      <td className="py-3 text-sm">{value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                              </table>
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-sm">No specifications available.</p>
-            )
-          ) : (
-            product.description ? (
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
-            ) : (
-              <p className="text-muted-foreground text-sm">No description available.</p>
-            )
-          )}
+        <div className="mt-8 max-w-2xl overflow-hidden relative min-h-[200px]">
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: -20, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            >
+              {activeTab === "specs" ? (
+                product.specs && Object.keys(product.specs).length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <tbody>
+                        {Object.entries(product.specs).map(([key, value]) => (
+                          <tr key={key} className="border-b border-border last:border-0">
+                            <td className="py-4 pr-6 text-[15px] text-text-secondary font-sans w-1/3 align-top">
+                              {key}
+                            </td>
+                            <td className="py-4 text-[15px] text-text-primary font-sans font-medium tabular-nums align-top">
+                              {value}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-text-secondary font-sans text-[15px]">No specifications available.</p>
+                )
+              ) : (
+                product.description ? (
+                  <p className="text-[15px] text-text-secondary font-sans leading-relaxed whitespace-pre-line">
+                    {product.description}
+                  </p>
+                ) : (
+                  <p className="text-text-secondary font-sans text-[15px]">No description available.</p>
+                )
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Related Products */}
       {related.length > 0 && (
-        <div className="mt-16">
-          <h2 className="text-xl font-bold mb-6">Related Products</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mt-20">
+          <h2 className="font-heading font-semibold text-text-primary text-2xl mb-8">Related Products</h2>
+          <motion.div 
+            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "0px 0px -100px 0px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.1 },
+              },
+            }}
+          >
             {related.map((rp) => {
               const inst = calculateInstallment(rp.base_price, 3);
+              const planOptions = getAllInstallmentOptions(rp.base_price);
               return (
-                <a
+                <motion.div
                   key={rp.id}
-                  href={`/products/${rp.slug}`}
-                  className="group rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow"
+                  variants={{
+                    hidden: { opacity: 0, y: 40, filter: 'blur(4px)' },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      filter: 'blur(0px)',
+                      transition: { duration: 0.8, type: 'spring', bounce: 0.3 },
+                    },
+                  }}
                 >
-                  <div className="relative aspect-square bg-muted overflow-hidden">
-                    {rp.images?.[0] ? (
-                      <Image
-                        src={rp.images[0]}
-                        alt={rp.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground text-xs">
-                        No image
+                  <Link
+                    href={`/products/${rp.slug}`}
+                    className="group interactive-card-green flex flex-col h-full rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-xs)]"
+                  >
+                    <div className="shimmer-overlay" />
+                    <div className="relative aspect-square overflow-hidden rounded-[var(--radius-image)] m-2 shrink-0 z-10">
+                      {rp.images?.[0] ? (
+                        <Image
+                          src={rp.images[0]}
+                          alt={rp.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full bg-surface-alt text-text-tertiary text-sm">
+                          No image
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 pt-3 flex flex-col flex-1 z-10 relative">
+                      <h3 className="font-medium font-sans text-text-primary text-[15px] leading-snug line-clamp-2 transition-colors">
+                        {rp.name}
+                      </h3>
+                      <div className="mt-auto pt-4">
+                        <p className="font-heading font-medium text-secondary-text tabular-nums text-xl">
+                          {formatPKR(rp.base_price)}
+                        </p>
+                        
+                        {/* Signature Element inside Related Products */}
+                        <div className="flex items-center gap-[4px] mt-1.5 mb-2">
+                          {planOptions.map((plan, i) => (
+                            <div
+                              key={plan.duration}
+                              className={cn(
+                                "w-[3px] h-[12px] rounded-sm",
+                                i === 0 ? "bg-primary" : "border-[1.5px] border-border-strong bg-transparent"
+                              )}
+                            />
+                          ))}
+                        </div>
+
+                        <p className="text-[13px] text-text-secondary font-sans">
+                          From <span className="font-medium tabular-nums text-text-primary">{formatPKR(inst.monthlyPayment)}/mo</span>
+                        </p>
                       </div>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
-                      {rp.name}
-                    </h3>
-                    <p className="text-sm font-bold mt-1">{formatPKR(rp.base_price)}</p>
-                    <p className="text-xs text-primary mt-0.5">
-                      From {formatPKR(inst.monthlyPayment)}/mo
-                    </p>
-                  </div>
-                </a>
+                    </div>
+                  </Link>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* Mobile sticky CTA */}
-      <div className="fixed bottom-16 left-0 right-0 z-30 bg-background border-t border-border p-4 md:hidden shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-[64px] left-0 right-0 z-30 bg-surface border-t border-border p-4 md:hidden shadow-[0_-4px_12px_rgba(20,24,31,0.08)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
         <div className="flex items-center justify-between max-w-7xl mx-auto gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">
-              {selectedDuration}mo · {formatPKR(breakdown.monthlyPayment)}/mo
+            <p className="text-xs text-text-secondary font-sans">
+              <span className="font-medium">{selectedDuration}mo</span> · <span className="tabular-nums">{formatPKR(breakdown.monthlyPayment)}/mo</span>
             </p>
-            <p className="text-sm font-bold text-primary">{formatPKR(breakdown.downPayment)} down</p>
+            <p className="text-[15px] font-heading font-semibold text-primary tabular-nums">{formatPKR(breakdown.downPayment)} down</p>
           </div>
           <Button 
             size="lg" 
-            className="flex-1 min-h-[44px]" 
+            className="flex-1 min-h-[44px] bg-primary text-white rounded-[var(--radius-control)] shadow-[var(--shadow-sm)] font-medium border-none hover:bg-primary-hover" 
             disabled={!inStock || !allVariantsSelected} 
             onClick={handleBuyNow}
           >
-            {!allVariantsSelected ? "Select Options" : "Buy on Installments"}
+            {!allVariantsSelected ? "Select Options" : "Buy Now"}
           </Button>
         </div>
       </div>
