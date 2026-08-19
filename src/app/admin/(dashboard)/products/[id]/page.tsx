@@ -48,7 +48,6 @@ export default async function EditProductPage({
       categories={catRes.data || []}
       brands={brandRes.data || []}
       product={productWithVariants as any}
-      defaultVariants={defaultVarsRes.data || []}
     />
   );
 }
