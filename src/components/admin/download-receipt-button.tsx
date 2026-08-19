@@ -12,7 +12,10 @@ export function DownloadReceiptButton({ data }: { data: ReceiptData }) {
   async function handleClick() {
     setBusy(true);
     try {
-      await downloadReceipt(data);
+      const logoUrl = typeof window !== "undefined"
+        ? `${window.location.origin}/logo-cropped.png`
+        : undefined;
+      await downloadReceipt({ ...data, logoUrl });
     } catch (err) {
       console.error(err);
     } finally {

@@ -9,7 +9,7 @@ import { Search, SlidersHorizontal, Grid3X3, List, ChevronDown, X } from "lucide
 import { TextShimmerWave } from "@/components/core/text-shimmer-wave";
 import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
-import { calculateInstallment, getAllInstallmentOptions } from "@/lib/helpers/installments";
+import { calculateInstallment, getTenureConfig } from "@/lib/helpers/installments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ interface Product {
   images: string[];
   stock_qty: number;
   created_at?: string;
+  tenure_pricing?: any[];
   brand?: { name: string } | null;
   category?: { name: string; slug: string } | null;
 }
@@ -527,8 +528,9 @@ export function ProductListingClient({
 }
 
 function ProductCard({ product }: { product: Product }) {
-  const installment = calculateInstallment(product.base_price, 3);
-  const planOptions = getAllInstallmentOptions(product.base_price);
+  const tenure = getTenureConfig(product.tenure_pricing);
+  const installment = calculateInstallment(product.base_price, 3, tenure[3].markup, undefined, tenure[3].downPayment);
+  const maxDownPayment = Math.ceil(Math.round(product.base_price * (1 + tenure[12].markup / 100)) * (tenure[12].downPayment / 100));
 
   return (
     <Link
@@ -566,24 +568,12 @@ function ProductCard({ product }: { product: Product }) {
           {product.name}
         </h3>
         <div className="mt-auto pt-4 relative z-10">
+          <p className="text-[12px] text-text-tertiary font-sans">Down Payment</p>
           <p className="font-heading font-medium text-secondary-text tabular-nums text-xl">
-            {formatPKR(product.base_price)}
+            {formatPKR(maxDownPayment)}
           </p>
-          
-          {/* Signature Element: 4-tick bar representing plans */}
-          <div className="flex items-center gap-[4px] mt-1.5 mb-2">
-            {planOptions.map((plan, i) => (
-              <div
-                key={plan.duration}
-                className={cn(
-                  "w-[3px] h-[12px] rounded-sm",
-                  i === 0 ? "bg-primary" : "border-[1.5px] border-border-strong bg-transparent"
-                )}
-              />
-            ))}
-          </div>
 
-          <p className="text-[13px] text-text-secondary font-sans">
+          <p className="text-[13px] text-text-secondary font-sans mt-1.5">
             From <span className="font-medium tabular-nums text-text-primary">{formatPKR(installment.monthlyPayment)}/mo</span>
           </p>
         </div>
@@ -602,8 +592,9 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 function ProductListCard({ product }: { product: Product }) {
-  const installment = calculateInstallment(product.base_price, 3);
-  const planOptions = getAllInstallmentOptions(product.base_price);
+  const tenure = getTenureConfig(product.tenure_pricing);
+  const installment = calculateInstallment(product.base_price, 3, tenure[3].markup, undefined, tenure[3].downPayment);
+  const maxDownPayment = Math.ceil(Math.round(product.base_price * (1 + tenure[12].markup / 100)) * (tenure[12].downPayment / 100));
 
   return (
     <Link
@@ -640,23 +631,12 @@ function ProductListCard({ product }: { product: Product }) {
         
         <div className="mt-auto pt-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4 relative z-10">
           <div>
+            <p className="text-[12px] text-text-tertiary font-sans">Down Payment</p>
             <p className="font-heading font-medium text-secondary-text tabular-nums text-2xl">
-              {formatPKR(product.base_price)}
+              {formatPKR(maxDownPayment)}
             </p>
-            
-            <div className="flex items-center gap-[4px] mt-2 mb-2">
-              {planOptions.map((plan, i) => (
-                <div
-                  key={plan.duration}
-                  className={cn(
-                    "w-[3px] h-[12px] rounded-sm",
-                    i === 0 ? "bg-primary" : "border-[1.5px] border-border-strong bg-transparent"
-                  )}
-                />
-              ))}
-            </div>
 
-            <p className="text-[13px] text-text-secondary font-sans">
+            <p className="text-[13px] text-text-secondary font-sans mt-2">
               From <span className="font-medium tabular-nums text-text-primary">{formatPKR(installment.monthlyPayment)}/mo</span>
             </p>
           </div>

@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 import { slugify, formatPKR } from "@/lib/helpers/format";
-import { ProductVariantEditor, ProductVariants, VariantAttribute } from "./product-variant-editor";
+import { calculateInstallment, DURATIONS, MARKUP_TIERS, DEFAULT_DOWN_PAYMENT_PCT } from "@/lib/helpers/installments";
+import { ProductVariantsCard } from "./product-variants-card";
 
 interface Category {
   id: string;
@@ -28,75 +28,52 @@ interface ProductFormProps {
   categories: Category[];
   brands: Brand[];
   product: any | null;
-  defaultVariants?: any[];
+  parentProduct?: any | null;
+  variants?: any[];
 }
 
-export function ProductForm({ categories, brands, product, defaultVariants = [] }: ProductFormProps) {
+export function ProductForm({ categories, brands, product, parentProduct, variants = [] }: ProductFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
   const isEdit = !!product;
+  const isVariantMode = !!parentProduct;
+  const source = parentProduct ?? product;
 
-  const [name, setName] = React.useState(product?.name || "");
+  const [name, setName] = React.useState(source?.name || "");
   const [slug, setSlug] = React.useState(product?.slug || "");
-  const [brandId, setBrandId] = React.useState(product?.brand_id || "");
-  const [categoryId, setCategoryId] = React.useState(product?.category_id || "");
-  const [description, setDescription] = React.useState(product?.description || "");
-  const [basePrice, setBasePrice] = React.useState(product?.base_price?.toString() || "");
-  const [markupPercent, setMarkupPercent] = React.useState(product?.markup_percent?.toString() ?? "0");
-  const [downPaymentPercent, setDownPaymentPercent] = React.useState(product?.down_payment_percent?.toString() ?? "25");
-  const [isPublished, setIsPublished] = React.useState(product?.is_published ?? false);
-  const [images, setImages] = React.useState<string[]>(product?.images || []);
-  const [imageInput, setImageInput] = React.useState("");
-  const [specs, setSpecs] = React.useState<{ key: string; value: string }[]>(
-    product?.specs ? Object.entries(product.specs as Record<string, string>).map(([k, v]) => ({ key: k, value: v })) : []
-  );
-
-  // Parse existing variants or initialize from defaults if new product
-  const initialVariants: ProductVariants = React.useMemo(() => {
-    if (product?.variant_attributes && product.variant_attributes.length > 0) {
-      const attrs = product.variant_attributes.map((a: any) => ({
-        id: a.id,
-        name: a.name,
-        options: a.options.map((o: any) => ({ id: o.id, value: o.value })),
-      }));
-      const combos = (product.variant_combinations || []).map((c: any) => ({
-        id: c.id,
-        options: (c.combination_options || []).map((co: any) => {
-          // Find option value from id
-          const optId = co.option_id || co.variant_option_id;
-          for (const a of attrs) {
-            const opt = (a.options || []).find((o: any) => o.id === optId);
-            if (opt) return opt.value;
-          }
-          return "";
-        }).filter(Boolean),
-        price_adjustment: c.price_adjustment,
-        stock_qty: c.stock_qty,
-      }));
-      return { attributes: attrs, combinations: combos };
-    }
-    
-    if (!isEdit && defaultVariants.length > 0) {
-      return {
-        attributes: defaultVariants.map((d: any) => ({ name: d.attribute_name, options: [] })),
-        combinations: []
+  const [brandId, setBrandId] = React.useState(source?.brand_id || "");
+  const [categoryId, setCategoryId] = React.useState(source?.category_id || "");
+  const [description, setDescription] = React.useState(source?.description || "");
+  const [basePrice, setBasePrice] = React.useState(source?.base_price?.toString() || "");
+  const [variantLabel, setVariantLabel] = React.useState(product?.variant_label || "");
+  const [hasVariants, setHasVariants] = React.useState<boolean>(product?.has_variants ?? false);
+  const [tenurePricing, setTenurePricing] = React.useState<Record<number, { markup: string; downPayment: string }>>(() => {
+    const init: Record<number, { markup: string; downPayment: string }> = {};
+    for (const d of DURATIONS) {
+      const existing = (source?.tenure_pricing || []).find((p: any) => Number(p.duration_months) === d);
+      init[d] = {
+        markup: existing != null ? String(existing.markup_percent) : String(MARKUP_TIERS[d] ?? 0),
+        downPayment: existing != null ? String(existing.down_payment_percent) : String(DEFAULT_DOWN_PAYMENT_PCT),
       };
     }
-
-    return { attributes: [], combinations: [] };
-  }, [product, defaultVariants, isEdit]);
-
-  const [variants, setVariants] = React.useState<ProductVariants>(initialVariants);
+    return init;
+  });
+  const [isPublished, setIsPublished] = React.useState(source?.is_published ?? false);
+  const [images, setImages] = React.useState<string[]>(source?.images || []);
+  const [imageInput, setImageInput] = React.useState("");
+  const [specs, setSpecs] = React.useState<{ key: string; value: string }[]>(
+    source?.specs ? Object.entries(source.specs as Record<string, string>).map(([k, v]) => ({ key: k, value: v })) : []
+  );
 
   const [saving, setSaving] = React.useState(false);
 
   const base = parseFloat(basePrice) || 0;
-  const markup = parseFloat(markupPercent) || 0;
-  const totalPrice = Math.round(base * (1 + markup / 100));
-  const dpPct = parseFloat(downPaymentPercent) || 0;
-  const minDownPayment = Math.round(base * (dpPct / 100));
-  const financeAmount = Math.max(0, totalPrice - minDownPayment);
-  const DURATIONS = [3, 6, 9, 12];
+  const tenureBreakdowns = DURATIONS.map((d) => {
+    const markup = parseFloat(tenurePricing[d].markup) || 0;
+    const dp = parseFloat(tenurePricing[d].downPayment) || 0;
+    return calculateInstallment(base, d, markup, undefined, dp);
+  });
+  const numberInputClass = "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
   function addImage() {
     if (imageInput.trim()) {
@@ -129,6 +106,12 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
       specObj[s.key] = s.value;
     });
 
+    const tenurePricingArray = DURATIONS.map((d) => ({
+      duration_months: d,
+      markup_percent: parseFloat(tenurePricing[d].markup) || 0,
+      down_payment_percent: parseFloat(tenurePricing[d].downPayment) || 0,
+    }));
+
     const payload = {
       name,
       slug: slug || slugify(name),
@@ -136,13 +119,16 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
       category_id: categoryId || null,
       description,
       base_price: parseInt(basePrice) || 0,
-      stock_qty: product?.stock_qty || 0,
-      markup_percent: parseFloat(markupPercent) || 0,
-      down_payment_percent: parseFloat(downPaymentPercent) || 0,
+      stock_qty: source?.stock_qty || 0,
+      markup_percent: parseFloat(tenurePricing[3].markup) || 0,
+      down_payment_percent: parseFloat(tenurePricing[3].downPayment) || 0,
       is_published: isPublished,
       imagesJson: JSON.stringify(images),
       specsJson: JSON.stringify(specObj),
-      variantsJson: JSON.stringify(variants),
+      tenurePricingJson: JSON.stringify(tenurePricingArray),
+      has_variants: hasVariants,
+      parent_product_id: parentProduct?.id ?? product?.parent_product_id ?? null,
+      variant_label: variantLabel || null,
     };
 
     try {
@@ -177,7 +163,7 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
         <button onClick={() => router.back()} className="p-2 hover:bg-muted rounded-md">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : "Add Product"}</h1>
+        <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : isVariantMode ? "Add Variant" : "Add Product"}</h1>
       </div>
 
       <Card>
@@ -225,51 +211,105 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
             <Label>Description</Label>
             <Textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
+          {!isVariantMode && !product?.parent_product_id && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={hasVariants} onChange={(e) => setHasVariants(e.target.checked)} className="h-4 w-4" />
+              <span className="text-sm">This product has variants</span>
+            </label>
+          )}
+          {(isVariantMode || !!product?.parent_product_id) && (
+            <div className="space-y-2">
+              <Label>Variant Label (short)</Label>
+              <Input value={variantLabel} onChange={(e) => setVariantLabel(e.target.value)} placeholder="e.g. 256GB Blue" />
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {hasVariants && isEdit && (
+        <ProductVariantsCard baseProductId={product.id} variants={variants} />
+      )}
+      {hasVariants && !isEdit && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Variants</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Save this product first, then you&apos;ll be able to add its variants.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Pricing</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Base Price (PKR)</Label>
-              <Input type="number" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-            </div>
-            <div className="space-y-2">
-              <Label>Markup (%)</Label>
-              <Input type="number" value={markupPercent} onChange={(e) => setMarkupPercent(e.target.value)} className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-            </div>
-            <div className="space-y-2">
-              <Label>Min Down Payment (%)</Label>
-              <Input type="number" value={downPaymentPercent} onChange={(e) => setDownPaymentPercent(e.target.value)} className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+          <div className="space-y-2">
+            <Label>Base Price (PKR)</Label>
+            <Input type="number" value={basePrice} onChange={(e) => setBasePrice(e.target.value)} className={numberInputClass} />
+          </div>
+
+          <div className="space-y-3">
+            <Label>Tenure Pricing</Label>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40 text-muted-foreground">
+                    <th className="text-left py-2 px-3 font-medium">Tenure</th>
+                    <th className="text-left py-2 px-3 font-medium">Markup (%)</th>
+                    <th className="text-left py-2 px-3 font-medium">Min Down Payment (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {DURATIONS.map((d) => (
+                    <tr key={d} className="border-b border-border last:border-b-0">
+                      <td className="py-2 px-3 font-medium">{d} months</td>
+                      <td className="py-2 px-3">
+                        <Input
+                          type="number"
+                          value={tenurePricing[d].markup}
+                          onChange={(e) => setTenurePricing((prev) => ({ ...prev, [d]: { ...prev[d], markup: e.target.value } }))}
+                          className={numberInputClass}
+                        />
+                      </td>
+                      <td className="py-2 px-3">
+                        <Input
+                          type="number"
+                          value={tenurePricing[d].downPayment}
+                          onChange={(e) => setTenurePricing((prev) => ({ ...prev, [d]: { ...prev[d], downPayment: e.target.value } }))}
+                          className={numberInputClass}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
           <div className="border-t border-border pt-4 space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Total Price (Base + Markup)</span>
-              <span className="font-semibold">{formatPKR(totalPrice)}</span>
+              <span className="text-muted-foreground">Plan Preview</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Down Payment ({downPaymentPercent || 0}%)</span>
-              <span className="font-semibold">{formatPKR(minDownPayment)}</span>
-            </div>
-
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
                   <th className="text-left py-2 font-medium">Duration</th>
-                  <th className="text-right py-2 font-medium">Total Installments</th>
+                  <th className="text-right py-2 font-medium">Total Price</th>
+                  <th className="text-right py-2 font-medium">Down Payment</th>
+                  <th className="text-right py-2 font-medium">Monthly</th>
                 </tr>
               </thead>
               <tbody>
-                {DURATIONS.map((d) => (
-                  <tr key={d} className="border-b border-border">
-                    <td className="py-2">{d} months</td>
-                    <td className="py-2 text-right font-medium">{formatPKR(Math.round(financeAmount / d))} x {d}</td>
+                {tenureBreakdowns.map((b) => (
+                  <tr key={b.duration} className="border-b border-border">
+                    <td className="py-2">{b.duration} months</td>
+                    <td className="py-2 text-right font-medium">{formatPKR(b.totalPrice)}</td>
+                    <td className="py-2 text-right">{formatPKR(b.downPayment)}</td>
+                    <td className="py-2 text-right font-medium">{formatPKR(b.monthlyPayment)} x {b.duration}</td>
                   </tr>
                 ))}
               </tbody>
@@ -345,12 +385,6 @@ export function ProductForm({ categories, brands, product, defaultVariants = [] 
           )}
         </CardContent>
       </Card>
-
-      <ProductVariantEditor
-        value={variants}
-        onChange={setVariants}
-        basePrice={parseFloat(basePrice) || 0}
-      />
 
       <div className="flex items-center gap-3">
         <label className="flex items-center gap-2 cursor-pointer">

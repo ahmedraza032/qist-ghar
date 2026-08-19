@@ -4,7 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Plus, UserPlus } from "lucide-react";
 import { createOrder } from "@/lib/actions/orders";
-import { calculateInstallment, getAllInstallmentOptions, MIN_DOWN_PAYMENT_PCT } from "@/lib/helpers/installments";
+import { calculateInstallment, getAllInstallmentOptions, MIN_DOWN_PAYMENT_PCT, MARKUP_TIERS } from "@/lib/helpers/installments";
 import { formatPKR } from "@/lib/helpers/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -52,9 +52,10 @@ export function NewOrderForm({
 
   const product = products.find((p) => p.id === productId) || null;
   const basePrice = product?.base_price || 0;
+  const totalPrice = Math.round(basePrice * (1 + (MARKUP_TIERS[duration] ?? 0) / 100));
 
   const minDownPayment = product
-    ? Math.ceil(basePrice * (MIN_DOWN_PAYMENT_PCT / 100))
+    ? Math.ceil(totalPrice * (MIN_DOWN_PAYMENT_PCT / 100))
     : 0;
 
   const activeDownPayment = typeof downPayment === "number" && downPayment >= minDownPayment

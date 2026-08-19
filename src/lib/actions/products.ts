@@ -15,7 +15,10 @@ export interface ProductInput {
   is_published: boolean;
   imagesJson: string;
   specsJson: string;
-  variantsJson?: string;
+  tenurePricingJson?: string;
+  has_variants?: boolean;
+  parent_product_id?: string | null;
+  variant_label?: string | null;
 }
 
 export interface ProductResult {
@@ -28,10 +31,10 @@ export async function createProduct(data: ProductInput): Promise<ProductResult> 
 
   let images: string[] = [];
   let specs: Record<string, string> = {};
-  let variants: any = { attributes: [], combinations: [] };
+  let tenurePricing: any = null;
   try { images = JSON.parse(data.imagesJson || "[]"); } catch { /* keep default */ }
   try { specs = JSON.parse(data.specsJson || "{}"); } catch { /* keep default */ }
-  try { variants = JSON.parse(data.variantsJson || "{}"); } catch { /* keep default */ }
+  try { tenurePricing = JSON.parse(data.tenurePricingJson || "null"); } catch { /* keep null */ }
 
   const { data: product, error } = await supabase.from("products").insert({
     name: data.name,
@@ -46,13 +49,15 @@ export async function createProduct(data: ProductInput): Promise<ProductResult> 
     is_published: data.is_published,
     images,
     specs,
+    tenure_pricing: tenurePricing,
+    has_variants: data.has_variants ?? false,
+    parent_product_id: data.parent_product_id ?? null,
+    variant_label: data.variant_label || null,
   }).select("id").single();
 
   if (error || !product) {
     return { success: false, error: error?.message || "Failed to create" };
   }
-
-  await syncVariants(supabase, product.id, variants);
 
   return { success: true };
 }
@@ -62,10 +67,10 @@ export async function updateProduct(id: string, data: ProductInput): Promise<Pro
 
   let images: string[] = [];
   let specs: Record<string, string> = {};
-  let variants: any = { attributes: [], combinations: [] };
+  let tenurePricing: any = null;
   try { images = JSON.parse(data.imagesJson || "[]"); } catch { /* keep default */ }
   try { specs = JSON.parse(data.specsJson || "{}"); } catch { /* keep default */ }
-  try { variants = JSON.parse(data.variantsJson || "{}"); } catch { /* keep default */ }
+  try { tenurePricing = JSON.parse(data.tenurePricingJson || "null"); } catch { /* keep null */ }
 
   const { error } = await supabase.from("products").update({
     name: data.name,
@@ -80,80 +85,24 @@ export async function updateProduct(id: string, data: ProductInput): Promise<Pro
     is_published: data.is_published,
     images,
     specs,
+    tenure_pricing: tenurePricing,
+    has_variants: data.has_variants ?? false,
+    parent_product_id: data.parent_product_id ?? null,
+    variant_label: data.variant_label || null,
   }).eq("id", id);
 
   if (error) {
     return { success: false, error: error.message };
   }
 
-  await syncVariants(supabase, id, variants);
-
   return { success: true };
 }
 
-async function syncVariants(supabase: any, productId: string, variants: any) {
-  if (!variants || !variants.attributes) return;
-
-  // For simplicity, we hard-delete attributes and combinations if this is an update, 
-  // and insert fresh ones. This implies that orders should ideally snapshot the 
-  // variant string rather than solely relying on the foreign key if strict historical 
-  // integrity of deleted variants is required.
-  await supabase.from("product_variant_attributes").delete().eq("product_id", productId);
-  await supabase.from("product_variant_combinations").delete().eq("product_id", productId);
-
-  if (variants.attributes.length === 0) return;
-
-  // 1. Insert attributes and their options
-  const optionMap = new Map<string, string>(); // value -> new option id
-
-  for (let i = 0; i < variants.attributes.length; i++) {
-    const attr = variants.attributes[i];
-    const { data: dbAttr } = await supabase.from("product_variant_attributes").insert({
-      product_id: productId,
-      name: attr.name,
-      display_order: i
-    }).select("id").single();
-
-    if (dbAttr && attr.options) {
-      for (let j = 0; j < attr.options.length; j++) {
-        const opt = attr.options[j];
-        const { data: dbOpt } = await supabase.from("product_variant_options").insert({
-          attribute_id: dbAttr.id,
-          value: opt.value,
-          display_order: j
-        }).select("id").single();
-
-        if (dbOpt) {
-          optionMap.set(opt.value.toLowerCase(), dbOpt.id);
-        }
-      }
-    }
+export async function deleteProduct(id: string): Promise<ProductResult> {
+  const supabase = await createServiceClient();
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) {
+    return { success: false, error: error.message };
   }
-
-  // 2. Insert combinations
-  if (variants.combinations && variants.combinations.length > 0) {
-    for (const combo of variants.combinations) {
-      // Find the option IDs for this combination's string values
-      const comboOptionIds = combo.options
-        .map((optVal: string) => optionMap.get(optVal.toLowerCase()))
-        .filter(Boolean);
-
-      if (comboOptionIds.length === combo.options.length) {
-        const { data: dbCombo } = await supabase.from("product_variant_combinations").insert({
-          product_id: productId,
-          price_adjustment: combo.price_adjustment || 0,
-          stock_qty: combo.stock_qty || 0,
-        }).select("id").single();
-
-        if (dbCombo) {
-          // Link options
-          const mappings = comboOptionIds.map((optId: string) => ({
-            combination_id: dbCombo.id,
-            option_id: optId,
-          }));
-          await supabase.from("product_variant_combination_options").insert(mappings);
-        }
-      }
-    }
-  }
+  return { success: true };
 }

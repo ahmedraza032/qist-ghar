@@ -36,7 +36,6 @@ export function generateWhatsAppOrderMessage(input: {
   address: string;
   city: string;
   orderId?: string;
-  variantName?: string;
 }): string {
   const {
     productName,
@@ -49,7 +48,6 @@ export function generateWhatsAppOrderMessage(input: {
     address,
     city,
     orderId,
-    variantName,
   } = input;
 
   const orderTag = orderId ? ` (Order #${orderId.slice(0, 8)})` : "";
@@ -59,7 +57,7 @@ export function generateWhatsAppOrderMessage(input: {
     "━━━━━━━━━━━━━━━━━━━━",
     "",
     "📦 *ORDER SUMMARY*",
-    `• *Product:* ${productName}${variantName ? ` (${variantName})` : ""}`,
+    `• *Product:* ${productName}`,
     `• *Installment Plan:* ${duration} Months`,
     `• *Down Payment (Due Today):* Rs ${downPayment.toLocaleString()}`,
     `• *Monthly Installment:* Rs ${monthly.toLocaleString()}/month`,

@@ -38,7 +38,7 @@ function HeaderContent() {
               }
             }}
           >
-            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[44px] w-auto object-contain mix-blend-multiply" quality={100} priority />
+            <Image src="/logo-cropped.png" alt="QistGhar Logo" width={420} height={140} className="h-10 md:h-[44px] w-auto object-contain mix-blend-multiply" priority />
           </Link>
         </div>
 

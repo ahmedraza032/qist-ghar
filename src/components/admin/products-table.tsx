@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { formatPKR } from "@/lib/helpers/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import { deleteProduct } from "@/lib/actions/products";
 import { SearchInput, TableRow, TableHeader, AnimatedStatusBadge, IconActionButton } from "@/components/admin/shared/admin-interactions";
 
 const PAGE_SIZE = 30;

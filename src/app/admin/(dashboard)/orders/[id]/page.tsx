@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RecordPaymentButton } from "@/components/admin/record-payment-button";
+import { DownloadReceiptButton } from "@/components/admin/download-receipt-button";
 import type { ReceiptData } from "@/types/receipt";
 
 
@@ -25,7 +26,7 @@ export default async function AdminOrderDetailPage({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, customer_id, status, down_payment_amount, monthly_amount, total_amount, payment_method, created_at, product:products(name, images, base_price), plan:installment_plans(duration_months, markup_percent), customer:customers(full_name, phone, address, city, created_at), variant_combination:product_variant_combinations(id, combination_options:product_variant_combination_options(option:product_variant_options(value)))"
+      "id, customer_id, status, down_payment_amount, monthly_amount, total_amount, payment_method, created_at, product:products(name, images, base_price), plan:installment_plans(duration_months, markup_percent), customer:customers(full_name, phone, address, city, created_at)"
     )
     .eq("id", id)
     .single();
@@ -34,10 +35,6 @@ export default async function AdminOrderDetailPage({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const o = order as any;
-  const variantName = o.variant_combination?.combination_options
-    ?.map((co: any) => co.option?.value)
-    .filter(Boolean)
-    .join(", ");
 
   const { data: installments } = await supabase
     .from("installments")
@@ -98,12 +95,15 @@ export default async function AdminOrderDetailPage({
   const receiptData: ReceiptData = {
     orderId: o.id,
     productName: o.product?.name || "—",
+    quantity: 1,
     durationMonths: o.plan?.duration_months || 0,
     downPayment: o.down_payment_amount,
     monthlyAmount: o.monthly_amount,
     totalAmount: o.total_amount,
     paymentMethod: o.payment_method,
     date: o.created_at,
+    startDate: instList.length > 0 ? instList[0].due_date : undefined,
+    endDate: instList.length > 0 ? instList[instList.length - 1].due_date : undefined,
     customerName: o.customer?.full_name || "—",
     customerPhone: o.customer?.phone || "—",
     customerAddress: o.customer?.address || "—",
@@ -112,6 +112,12 @@ export default async function AdminOrderDetailPage({
       dueDate: inst.due_date,
       amount: inst.amount,
       status: deriveInstallmentStatus(inst.status, inst.due_date, inst.paidTotal, inst.amount) === "paid" ? "paid" : "pending",
+    })),
+    payments: payList.map((pmt: any) => ({
+      date: pmt.paid_at,
+      reference: pmt.reference_no,
+      method: pmt.method,
+      amount: pmt.amount,
     })),
   };
 
@@ -134,7 +140,7 @@ export default async function AdminOrderDetailPage({
           <p className="text-sm text-muted-foreground">{formatDate(o.created_at)}</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {/* <DownloadReceiptButton data={receiptData} /> */}
+          <DownloadReceiptButton data={receiptData} />
           <Badge
             variant={
               o.status === "active" || o.status === "completed"
@@ -161,7 +167,6 @@ export default async function AdminOrderDetailPage({
                 <span className="text-muted-foreground">Product</span>
                 <div className="text-right">
                   <span className="font-medium block">{o.product?.name}</span>
-                  {variantName && <span className="text-sm text-muted-foreground">{variantName}</span>}
                 </div>
               </div>
               <div className="flex justify-between mt-2">
