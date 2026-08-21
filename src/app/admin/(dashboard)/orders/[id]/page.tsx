@@ -131,15 +131,15 @@ export default async function AdminOrderDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/orders" className="p-2 hover:bg-muted rounded-md">
+      <div className="flex items-center gap-4 flex-wrap">
+        <Link href="/admin/orders" className="p-2 hover:bg-muted rounded-md shrink-0">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold">Order #{o.id.slice(0, 8)}</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold truncate">Order #{o.id.slice(0, 8)}</h1>
           <p className="text-sm text-muted-foreground">{formatDate(o.created_at)}</p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 shrink-0">
           <DownloadReceiptButton data={receiptData} />
           <Badge
             variant={

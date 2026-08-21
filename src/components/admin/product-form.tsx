@@ -163,7 +163,7 @@ export function ProductForm({ categories, brands, product, parentProduct, varian
         <button onClick={() => router.back()} className="p-2 hover:bg-muted rounded-md">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : isVariantMode ? "Add Variant" : "Add Product"}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{isEdit ? "Edit Product" : isVariantMode ? "Add Variant" : "Add Product"}</h1>
       </div>
 
       <Card>
@@ -179,7 +179,7 @@ export function ProductForm({ categories, brands, product, parentProduct, varian
             <Label>Slug</Label>
             <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder={slugify(name)} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Category</Label>
               <select
@@ -254,8 +254,8 @@ export function ProductForm({ categories, brands, product, parentProduct, varian
 
           <div className="space-y-3">
             <Label>Tenure Pricing</Label>
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-sm">
+            <div className="rounded-lg border border-border overflow-x-auto">
+              <table className="w-full text-sm min-w-[480px]">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-muted-foreground">
                     <th className="text-left py-2 px-3 font-medium">Tenure</th>
@@ -290,11 +290,11 @@ export function ProductForm({ categories, brands, product, parentProduct, varian
             </div>
           </div>
 
-          <div className="border-t border-border pt-4 space-y-3">
+          <div className="border-t border-border pt-4 space-y-3 overflow-x-auto">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Plan Preview</span>
             </div>
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[420px]">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
                   <th className="text-left py-2 font-medium">Duration</th>
@@ -362,7 +362,7 @@ export function ProductForm({ categories, brands, product, parentProduct, varian
         </CardHeader>
         <CardContent className="space-y-2">
           {specs.map((spec, i) => (
-            <div key={i} className="flex gap-2 items-center">
+            <div key={i} className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
               <Input
                 placeholder="Key"
                 value={spec.key}
@@ -375,7 +375,7 @@ export function ProductForm({ categories, brands, product, parentProduct, varian
                 onChange={(e) => updateSpec(i, "value", e.target.value)}
                 className="flex-1"
               />
-              <Button variant="ghost" size="icon" onClick={() => removeSpec(i)}>
+              <Button variant="ghost" size="icon" onClick={() => removeSpec(i)} className="self-end sm:self-auto shrink-0">
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </div>

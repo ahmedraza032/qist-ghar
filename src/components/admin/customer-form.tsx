@@ -50,7 +50,7 @@ export function CustomerForm({ customer }: { customer: any | null }) {
         <button type="button" onClick={() => router.back()} className="p-2 hover:bg-muted rounded-md">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-3xl font-bold">{isEdit ? "Edit Customer" : "Add Customer"}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">{isEdit ? "Edit Customer" : "Add Customer"}</h1>
       </div>
 
       <Card>
@@ -66,7 +66,7 @@ export function CustomerForm({ customer }: { customer: any | null }) {
             <Label htmlFor="phone">Phone Number</Label>
             <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="03XX XXXXXXX" required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
               <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />

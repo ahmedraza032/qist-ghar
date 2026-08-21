@@ -125,24 +125,8 @@ export function ProductsTable({
 
   return (
     <div className="space-y-4">
-      {/* Mobile Filter Toggle */}
-      <div className="sm:hidden">
-        <Button
-          variant="outline"
-          className="w-full gap-2 min-h-[44px]"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <Filter className="h-4 w-4" />
-          {showFilters ? "Hide Filters" : "Show Filters & Search"}
-        </Button>
-      </div>
-
-      {/* Filter Controls */}
-      <div className={cn(
-        "flex-col sm:flex-row flex-wrap gap-2.5 items-stretch sm:items-center",
-        showFilters ? "flex" : "hidden sm:flex"
-      )}>
-        {/* Search Bar */}
+      {/* Search (always visible) + mobile filter toggle */}
+      <div className="flex items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
           <SearchInput
             value={query}
@@ -153,6 +137,22 @@ export function ProductsTable({
             placeholder="Search by product name, brand, or category..."
           />
         </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="sm:hidden shrink-0 min-h-[44px] min-w-[44px]"
+          onClick={() => setShowFilters(!showFilters)}
+          aria-label="Toggle filters"
+        >
+          <Filter className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Filter Controls */}
+      <div className={cn(
+        "flex-col sm:flex-row flex-wrap gap-2.5 items-stretch sm:items-center",
+        showFilters ? "flex" : "hidden sm:flex"
+      )}>
 
         {/* Category Dropdown */}
         <select
@@ -239,7 +239,7 @@ export function ProductsTable({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="hidden sm:block overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50 text-muted-foreground">
@@ -304,6 +304,60 @@ export function ProductsTable({
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="sm:hidden flex flex-col gap-4">
+            {paged.map((product: any, idx: number) => {
+              const serialNumber = (currentPage - 1) * PAGE_SIZE + idx;
+              return (
+                <div key={product.id} className="rounded-lg border border-border overflow-hidden bg-card">
+                  <div className="flex items-start gap-3 p-4 border-b border-border">
+                    <div className="w-12 h-12 rounded-md bg-muted shrink-0 overflow-hidden">
+                      {product.images?.[0] ? (
+                        <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="w-6 h-6 m-3 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-mono text-muted-foreground">#{serialNumber}</span>
+                        <AnimatedStatusBadge
+                          status={product.is_published ? "Published" : "Draft"}
+                          variant={product.is_published ? "success" : "secondary"}
+                          isPositiveState={product.is_published}
+                        />
+                      </div>
+                      <p className="font-medium leading-tight mt-1">{product.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{product.brand?.name}</p>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">Category</span>
+                      <span className="text-sm">{product.category?.name || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border py-3">
+                      <span className="text-sm text-muted-foreground">Price</span>
+                      <span className="text-sm font-medium">{formatPKR(product.base_price)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Sold</span>
+                      <span className="text-sm font-medium">{soldByProduct?.[product.id] ?? 0}</span>
+                    </div>
+                    <div className="pt-3">
+                      <Link href={`/admin/products/${product.id}`}>
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold bg-[#82B63F] hover:bg-[#6FA032] text-white w-full">
+                          <Pencil className="h-3 w-3" />
+                          Edit Product
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {totalPages > 1 && (

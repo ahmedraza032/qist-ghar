@@ -143,8 +143,8 @@ function CheckoutPageInner() {
           <div className="mx-auto w-16 h-16 bg-primary-subtle text-primary rounded-full flex items-center justify-center mb-6 shadow-[var(--shadow-sm)]">
             <Check className="h-8 w-8" />
           </div>
-          <h1 className="text-[32px] font-heading font-semibold text-text-primary">Order Sent to WhatsApp!</h1>
-          <p className="text-text-secondary font-sans text-lg">
+          <h1 className="text-2xl sm:text-[32px] font-heading font-semibold text-text-primary">Order Sent to WhatsApp!</h1>
+          <p className="text-text-secondary font-sans text-base md:text-lg">
             Your order has been placed and handed off to our team via WhatsApp for confirmation.
           </p>
           <div className="bg-surface border border-border shadow-[var(--shadow-xs)] rounded-[var(--radius-card)] p-8 mt-8 text-left">
@@ -179,7 +179,7 @@ function CheckoutPageInner() {
           <ArrowLeft className="h-[14px] w-[14px]" /> Back to products
         </Link>
 
-        <h1 className="font-heading font-semibold text-[32px] text-text-primary mb-8">Checkout</h1>
+        <h1 className="font-heading font-semibold text-2xl sm:text-[32px] text-text-primary mb-8">Checkout</h1>
 
         <div className="grid lg:grid-cols-5 gap-6 md:gap-8">
           <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-8">
@@ -193,7 +193,7 @@ function CheckoutPageInner() {
                     value={form.name}
                     onChange={(e) => update("name", e.target.value)}
                     placeholder="Ahmed Khan"
-                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-[15px] text-text-primary shadow-none"
+                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-base text-text-primary shadow-none"
                   />
                   {errors.name && (
                     <p className="text-[13px] text-destructive font-sans font-medium mt-1">{errors.name}</p>
@@ -207,7 +207,7 @@ function CheckoutPageInner() {
                     value={form.phone}
                     onChange={(e) => update("phone", e.target.value)}
                     placeholder="03XX XXXXXXX"
-                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-[15px] text-text-primary shadow-none"
+                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-base text-text-primary shadow-none"
                   />
                   {errors.phone && (
                     <p className="text-[13px] text-destructive font-sans font-medium mt-1">{errors.phone}</p>
@@ -220,7 +220,7 @@ function CheckoutPageInner() {
                     value={form.city}
                     onChange={(e) => update("city", e.target.value)}
                     placeholder="Karachi"
-                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-[15px] text-text-primary shadow-none"
+                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-base text-text-primary shadow-none"
                   />
                 </div>
                 <div className="space-y-2">
@@ -230,7 +230,7 @@ function CheckoutPageInner() {
                     value={form.address}
                     onChange={(e) => update("address", e.target.value)}
                     placeholder="House #, Street, Area"
-                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-[15px] text-text-primary shadow-none"
+                    className="h-12 px-3 bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 placeholder:text-text-tertiary transition-all duration-200 font-sans text-base text-text-primary shadow-none"
                   />
                   {errors.address && (
                     <p className="text-[13px] text-destructive font-sans font-medium mt-1">{errors.address}</p>
@@ -285,7 +285,7 @@ function CheckoutPageInner() {
                           <Input
                             type="number"
                             min={minDownPayment}
-                            className="h-[36px] w-[100px] text-right font-sans font-medium text-text-primary tabular-nums bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 transition-colors duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-none text-[14px]"
+                            className="h-[36px] w-[100px] text-right font-sans font-medium text-text-primary tabular-nums bg-surface border border-border rounded-[var(--radius-control)] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-subtle focus-visible:ring-offset-0 transition-colors duration-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-none text-base"
                             value={customDownPayment}
                             onChange={(e) => {
                               const val = parseFloat(e.target.value) || 0;

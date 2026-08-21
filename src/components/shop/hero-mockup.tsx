@@ -275,6 +275,7 @@ export function HeroMockup() {
       </div>
 
       {/* Fixed-size composition container — clickable to advance */}
+      <div className="scale-[0.82] sm:scale-100 origin-center">
       <div
         className="relative cursor-pointer select-none"
         style={{ width: 280, height: 460 }}
@@ -345,6 +346,7 @@ export function HeroMockup() {
             </motion.div>
           </AnimatePresence>
         </div>
+      </div>
       </div>
 
       {/* Dot navigation */}

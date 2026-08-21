@@ -174,7 +174,7 @@ export function ProductListingClient({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <motion.h1
-            className="font-heading text-3xl font-semibold bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] text-transparent bg-clip-text inline-block"
+            className="font-heading text-2xl sm:text-3xl font-semibold bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] text-transparent bg-clip-text inline-block"
             animate={{ backgroundPosition: ["200% center", "-200% center"] }}
             transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
           >
@@ -459,7 +459,7 @@ export function ProductListingClient({
           ) : view === "grid" ? (
             <motion.div 
               key={`grid-${selectedCategory}-${search}-${sortBy}`}
-              className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+              className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6"
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.1 }}
@@ -558,28 +558,28 @@ function ProductCard({ product }: { product: Product }) {
           </Badge>
         )}
       </div>
-      <div className="p-4 pt-3 flex flex-col flex-1">
+      <div className="p-3 sm:p-4 pt-3 flex flex-col flex-1">
         {product.brand && (
-          <p className="text-text-tertiary text-[12px] uppercase tracking-[0.04em] mb-1 font-sans font-medium">
+          <p className="text-text-tertiary text-[11px] sm:text-[12px] uppercase tracking-[0.04em] mb-1 font-sans font-medium truncate">
             {product.brand.name}
           </p>
         )}
-        <h3 className="font-medium font-sans text-text-primary text-[15px] leading-snug line-clamp-2 transition-colors relative z-10">
+        <h3 className="font-medium font-sans text-text-primary text-sm sm:text-[15px] leading-snug line-clamp-2 transition-colors relative z-10">
           {product.name}
         </h3>
-        <div className="mt-auto pt-4 relative z-10">
-          <p className="text-[12px] text-text-tertiary font-sans">Down Payment</p>
-          <p className="font-heading font-medium text-secondary-text tabular-nums text-xl">
+        <div className="mt-auto pt-3 sm:pt-4 relative z-10">
+          <p className="text-[11px] sm:text-[12px] text-text-tertiary font-sans">Down Payment</p>
+          <p className="font-heading font-medium text-secondary-text tabular-nums text-lg sm:text-xl leading-tight">
             {formatPKR(maxDownPayment)}
           </p>
 
-          <p className="text-[13px] text-text-secondary font-sans mt-1.5">
+          <p className="text-xs sm:text-[13px] text-text-secondary font-sans mt-1.5">
             From <span className="font-medium tabular-nums text-text-primary">{formatPKR(installment.monthlyPayment)}/mo</span>
           </p>
         </div>
-        <div className="mt-4 pt-1">
+        <div className="mt-3 sm:mt-4 pt-1">
           <motion.span 
-            className="text-[13px] border-[1.5px] border-border-strong text-text-primary px-3 py-2 rounded-[var(--radius-control)] font-medium transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] w-full flex items-center justify-center group-hover:border-primary group-hover:text-primary group-hover:bg-primary-subtle hover:!bg-primary hover:!text-white hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)] active:scale-[0.98]"
+            className="text-xs sm:text-[13px] border-[1.5px] border-border-strong text-text-primary px-3 py-1.5 sm:py-2 rounded-[var(--radius-control)] font-medium transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] w-full flex items-center justify-center group-hover:border-primary group-hover:text-primary group-hover:bg-primary-subtle hover:!bg-primary hover:!text-white hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)] active:scale-[0.98]"
             whileHover="hover"
             initial="initial"
           >

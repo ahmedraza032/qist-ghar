@@ -76,14 +76,22 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
   return (
     <Card>
       <CardContent className="pt-6 space-y-4">
-        <div className="sm:hidden mb-2">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <SearchInput
+              value={query}
+              onChange={setQuery}
+              placeholder="Search by customer, product, or order #..."
+            />
+          </div>
           <Button
             variant="outline"
-            className="w-full gap-2 min-h-[44px]"
+            size="icon"
+            className="sm:hidden shrink-0 min-h-[44px] min-w-[44px]"
             onClick={() => setShowFilters(!showFilters)}
+            aria-label="Toggle filters"
           >
             <Filter className="h-4 w-4" />
-            {showFilters ? "Hide Filters" : "Show Filters"}
           </Button>
         </div>
 
@@ -91,13 +99,6 @@ export function InstallmentsTable({ installments }: { installments: any[] }) {
           "flex-col sm:flex-row flex-wrap gap-3",
           showFilters ? "flex" : "hidden sm:flex"
         )}>
-          <div className="relative flex-1 w-full sm:w-auto min-w-[200px]">
-            <SearchInput
-              value={query}
-              onChange={setQuery}
-              placeholder="Search by customer, product, or order #..."
-            />
-          </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}

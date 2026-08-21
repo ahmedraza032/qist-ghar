@@ -193,12 +193,12 @@ export function ProductDetailClient({ product, variants, related }: ProductDetai
               {product.brand.name}
             </p>
           )}
-          <h1 className="font-heading font-semibold text-text-primary text-[28px] leading-tight">
+          <h1 className="font-heading font-semibold text-text-primary text-[22px] sm:text-[28px] leading-tight">
             {product.name}
           </h1>
           <div className="mt-3">
             <p className="text-[12px] text-text-tertiary font-sans">Down Payment</p>
-            <p className="font-heading font-medium text-secondary-text text-[32px] tabular-nums flex items-center">
+            <p className="font-heading font-medium text-secondary-text text-[24px] sm:text-[32px] tabular-nums flex items-center">
               Rs <SlidingNumber value={maxTenureDownPayment.toLocaleString("en-US")} />
             </p>
           </div>
@@ -233,7 +233,7 @@ export function ProductDetailClient({ product, variants, related }: ProductDetai
             <h3 className="font-heading font-semibold text-[14px] text-text-primary mb-6">Choose your installment plan</h3>
             
             {/* Installment Plan Grid */}
-            <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-8">
               {allOptions.map((opt) => {
                 const isActive = opt.duration === selectedDuration;
                 return (
@@ -249,12 +249,12 @@ export function ProductDetailClient({ product, variants, related }: ProductDetai
                   >
                     <span className={cn(
                       "font-heading tabular-nums transition-colors",
-                      isActive ? "text-[16px] sm:text-[18px] text-primary font-semibold" : "text-[15px] sm:text-[16px] text-text-secondary font-medium group-hover:text-text-primary"
+                      isActive ? "text-sm sm:text-[18px] text-primary font-semibold" : "text-sm sm:text-[16px] text-text-secondary font-medium group-hover:text-text-primary"
                     )}>
                       {opt.duration}mo
                     </span>
                     <span className={cn(
-                      "font-sans font-medium text-[11px] sm:text-[12px] tabular-nums mt-1 transition-colors",
+                      "font-sans font-medium text-xs sm:text-[12px] tabular-nums mt-1 transition-colors",
                       isActive ? "text-primary/80" : "text-text-tertiary group-hover:text-text-secondary"
                     )}>
                       {formatPKR(opt.monthlyPayment)}
@@ -330,13 +330,13 @@ export function ProductDetailClient({ product, variants, related }: ProductDetai
           <div className="mt-8 mb-4">
             <Button
               size="lg"
-              className="w-full gap-2 bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] shadow-[var(--shadow-sm)] font-medium h-14 text-[16px] border-none"
+              className="w-full gap-2 whitespace-normal sm:whitespace-nowrap bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] shadow-[var(--shadow-sm)] font-medium h-14 text-[16px] border-none"
               disabled={!inStock}
               onClick={handleBuyNow}
             >
-              <ShoppingBag className="h-5 w-5" />
+              <ShoppingBag className="h-5 w-5 shrink-0" />
               {inStock
-                ? <span className="flex items-center gap-1">Buy on Installments — Rs <SlidingNumber value={breakdown.monthlyPayment.toLocaleString("en-US")} />/mo</span>
+                ? <span className="flex items-center justify-center gap-1 leading-tight">Buy on Installments — Rs <SlidingNumber value={breakdown.monthlyPayment.toLocaleString("en-US")} />/mo</span>
                 : "Out of Stock"}
             </Button>
           </div>
@@ -430,7 +430,7 @@ export function ProductDetailClient({ product, variants, related }: ProductDetai
         <div className="mt-20">
           <h2 className="font-heading font-semibold text-text-primary text-2xl mb-8">Related Products</h2>
           <motion.div 
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "0px 0px -100px 0px" }}
@@ -515,7 +515,7 @@ export function ProductDetailClient({ product, variants, related }: ProductDetai
       )}
 
       {/* Mobile sticky CTA */}
-      <div className="fixed bottom-[64px] left-0 right-0 z-30 bg-surface border-t border-border p-4 md:hidden shadow-[0_-4px_12px_rgba(20,24,31,0.08)] pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-surface border-t border-border p-4 md:hidden shadow-[0_-4px_12px_rgba(20,24,31,0.08)]">
         <div className="flex items-center justify-between max-w-7xl mx-auto gap-4">
           <div>
             <p className="text-xs text-text-secondary font-sans">

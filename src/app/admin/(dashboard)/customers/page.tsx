@@ -43,7 +43,7 @@ export default async function AdminCustomersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Customers</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Customers</h1>
           <p className="text-muted-foreground mt-1">{rows.length} customers in ledger</p>
         </div>
         <Link href="/admin/customers/new">

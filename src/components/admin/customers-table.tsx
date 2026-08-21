@@ -95,7 +95,7 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="hidden sm:block overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50 text-muted-foreground text-left">
@@ -152,6 +152,59 @@ export function CustomersTable({ customers }: { customers: CustomerRow[] }) {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="sm:hidden flex flex-col gap-4">
+            {paged.map((c, idx) => {
+              const serialNumber = (currentPage - 1) * PAGE_SIZE + idx;
+              return (
+                <div key={c.id} className="rounded-lg border border-border overflow-hidden bg-card">
+                  <div className="flex items-start justify-between gap-3 p-4 border-b border-border">
+                    <div className="min-w-0">
+                      <span className="text-xs font-mono text-muted-foreground">#{serialNumber}</span>
+                      <Link href={`/admin/customers/${c.id}`} className="font-medium block leading-tight mt-1 hover:text-primary">{c.full_name}</Link>
+                      <p className="text-xs text-muted-foreground mt-0.5">{c.phone}</p>
+                    </div>
+                    <span className="text-sm font-semibold text-amount shrink-0">{formatPKR(c.outstanding)}</span>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-center border-b border-border pb-3">
+                      <span className="text-sm text-muted-foreground">City</span>
+                      <span className="text-sm">{c.city || "—"}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border py-3">
+                      <span className="text-sm text-muted-foreground">Orders</span>
+                      <span className="text-sm font-semibold">{c.orders_count}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-border py-3">
+                      <span className="text-sm text-muted-foreground">Total Spent</span>
+                      <span className="text-sm font-medium">{formatPKR(c.total_spent)}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-3">
+                      <span className="text-sm text-muted-foreground">Joined</span>
+                      <span className="text-sm text-muted-foreground">{formatDate(c.created_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2">
+                      <Link href={`/admin/customers/${c.id}/edit`} className="flex-1">
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-semibold bg-[#82B63F] hover:bg-[#6FA032] text-white w-full">
+                          <Pencil className="h-3 w-3" />
+                          Edit
+                        </span>
+                      </Link>
+                      <IconActionButton
+                        onClick={() => setCustomerToDelete(c)}
+                        disabled={deletingId === c.id}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Delete customer"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </IconActionButton>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {totalPages > 1 && (

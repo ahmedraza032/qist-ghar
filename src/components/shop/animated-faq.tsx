@@ -50,7 +50,7 @@ export function AnimatedFAQ() {
   return (
     <div className="w-full flex flex-col items-center">
       {/* Section title */}
-      <h2 className="font-heading text-3xl md:text-4xl font-bold text-text-primary text-center mb-6">
+      <h2 className="font-heading text-2xl md:text-4xl font-bold text-text-primary text-center mb-6">
         Frequently Asked Questions
       </h2>
 

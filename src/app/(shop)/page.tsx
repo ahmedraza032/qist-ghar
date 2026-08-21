@@ -61,7 +61,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-center gap-12 md:gap-8 lg:gap-16">
             {/* Left: Text + CTAs — unchanged */}
             <div className="flex-1 max-w-xl">
-              <h1 className="font-heading text-[34px] leading-[40px] md:text-[48px] md:leading-[56px] font-semibold text-text-primary">
+              <h1 className="font-heading text-[28px] leading-[34px] sm:text-[34px] sm:leading-[40px] md:text-[48px] md:leading-[56px] font-semibold text-text-primary">
                 Buy Now, Pay in{" "}
                 <span className="relative inline-block">
                   <motion.span
@@ -94,24 +94,24 @@ export default function HomePage() {
                   </svg>
                 </span>
               </h1>
-              <p className="mt-6 text-lg text-text-secondary max-w-lg">
+              <p className="mt-6 text-base sm:text-lg text-text-secondary max-w-lg">
                 Get phones, laptops, TVs, and appliances delivered to your door.
                 Pay monthly with JazzCash, Easypaisa, or bank transfer.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Link href="/products">
+                <Link href="/products" className="w-full sm:w-auto">
                   <Button 
                     size="lg" 
-                    className="gap-2 bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] border-none"
+                    className="gap-2 w-full sm:w-auto bg-primary hover:bg-primary-hover text-white rounded-[var(--radius-control)] border-none"
                   >
                     Browse Products <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/products">
+                <Link href="/products" className="w-full sm:w-auto">
                   <Button 
                     size="lg" 
                     variant="outline"
-                    className="bg-transparent border-[1.5px] border-border-strong text-text-primary hover:border-primary hover:bg-primary-subtle hover:text-primary rounded-[var(--radius-control)] transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)]"
+                    className="bg-transparent w-full sm:w-auto border-[1.5px] border-border-strong text-text-primary hover:border-primary hover:bg-primary-subtle hover:text-primary rounded-[var(--radius-control)] transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-[1px] hover:shadow-[var(--shadow-sm)]"
                   >
                     View Installment Plans
                   </Button>
@@ -170,7 +170,7 @@ export default function HomePage() {
               style={{ background: "rgba(32,94,163,0.08)", color: "#205EA3" }}>
               Simple Process
             </span>
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-text-primary">
+            <h2 className="font-heading text-2xl md:text-4xl font-bold text-text-primary">
               How It Works
             </h2>
           </div>
@@ -186,7 +186,7 @@ export default function HomePage() {
 
               const card = (
                 <div
-                  className="group relative flex flex-col items-center text-center rounded-2xl border px-6 pt-10 pb-10 h-full transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.98] cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none"
+                  className="group relative flex flex-col items-center text-center rounded-2xl border px-5 pt-8 pb-8 md:px-6 md:pt-10 md:pb-10 h-full transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.98] cursor-pointer motion-reduce:transition-none motion-reduce:hover:transform-none"
                   style={{
                     background: accent.bg,
                     borderColor: accent.ring,
@@ -321,7 +321,7 @@ export default function HomePage() {
             {trustBadges.map((badge) => (
               <div
                 key={badge.label}
-                className="flex-1 flex flex-col items-center text-center rounded-2xl border px-6 pt-10 pb-10 transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:transform-none"
+                className="flex-1 flex flex-col items-center text-center rounded-2xl border px-5 pt-8 pb-8 md:px-6 md:pt-10 md:pb-10 transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.98] motion-reduce:transition-none motion-reduce:hover:transform-none"
                 style={{
                   background: badge.bg,
                   borderColor: badge.ring,
@@ -379,10 +379,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="bg-secondary rounded-[var(--radius-card)] p-8 md:p-12 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8 shadow-[var(--shadow-md)]">
             <div className="max-w-xl">
-              <h2 className="font-heading text-3xl md:text-4xl font-semibold text-text-primary">
+              <h2 className="font-heading text-2xl md:text-4xl font-semibold text-text-primary">
                 Ready to start buying on installments?
               </h2>
-              <p className="mt-4 text-text-primary/90 text-lg">
+              <p className="mt-4 text-text-primary/90 text-base md:text-lg">
                 No credit card required. No hidden fees. Just pick a product, choose
                 a plan, and pay monthly.
               </p>

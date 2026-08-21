@@ -111,7 +111,7 @@ export function NewOrderForm({
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-6">
       <div className="flex items-center gap-4">
         <LinkBack href="/admin/orders" />
-        <h1 className="text-3xl font-bold">New Order</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">New Order</h1>
       </div>
 
       <Card>
@@ -147,7 +147,7 @@ export function NewOrderForm({
               />
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Full Name</Label>
                 <Input value={newCustomer.name} onChange={(e) => setNewCustomer((s) => ({ ...s, name: e.target.value }))} />
@@ -189,7 +189,7 @@ export function NewOrderForm({
             <>
               <div>
                 <Label>Duration</Label>
-                <div className="grid grid-cols-4 gap-2 mt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                   {DURATIONS.map((d) => (
                     <button
                       key={d}
@@ -262,7 +262,7 @@ export function NewOrderForm({
             </>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <select

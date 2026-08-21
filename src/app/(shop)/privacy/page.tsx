@@ -16,8 +16,8 @@ export default async function PrivacyPage() {
     <main className="min-h-screen bg-bg-tinted pb-20">
       {/* Header Section */}
       <div className="bg-surface border-b border-border py-16 md:py-24 mb-10 text-center px-4">
-        <h1 className="text-4xl md:text-5xl font-heading font-bold text-text-primary mb-4 tracking-tight">Privacy Policy</h1>
-        <p className="text-text-secondary text-lg max-w-xl mx-auto">
+        <h1 className="text-3xl md:text-5xl font-heading font-bold text-text-primary mb-4 tracking-tight">Privacy Policy</h1>
+        <p className="text-text-secondary text-base md:text-lg max-w-xl mx-auto">
           How we collect, use, and protect your personal information.
         </p>
       </div>
@@ -25,12 +25,12 @@ export default async function PrivacyPage() {
       {/* Content Section */}
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-surface rounded-2xl p-8 md:p-12 shadow-sm border border-border">
-          <div className="space-y-6 text-[17px] leading-relaxed text-text-secondary font-sans">
+          <div className="space-y-6 text-base md:text-[17px] leading-relaxed text-text-secondary font-sans">
             {content.split("\n").map((line: string, i: number) => {
               if (!line.trim()) return null; // Skip empty lines
               // Detect section headers (e.g. "1. Something")
               if (line.match(/^\d+\.\s/)) {
-                return <h2 key={i} className="text-xl font-heading font-bold text-text-primary pt-4 pb-1">{line}</h2>;
+                return <h2 key={i} className="text-lg md:text-xl font-heading font-bold text-text-primary pt-4 pb-1">{line}</h2>;
               }
               return <p key={i}>{line}</p>;
             })}

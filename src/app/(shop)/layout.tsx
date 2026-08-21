@@ -9,10 +9,10 @@ export default function ShopLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex min-h-[100dvh] flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
       <ScrollProgress />
       <Header />
-      <main className="flex-1 pb-16 md:pb-4">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
       <MobileNav />
     </div>

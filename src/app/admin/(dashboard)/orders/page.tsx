@@ -44,7 +44,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = React.useState<OrderItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [query, setQuery] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState("active");
   const [methodFilter, setMethodFilter] = React.useState("");
   const [fromDate, setFromDate] = React.useState("");
   const [toDate, setToDate] = React.useState("");
@@ -100,7 +100,7 @@ export default function AdminOrdersPage() {
     <div className="space-y-6 max-w-full">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Orders</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Orders</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             {orders.length} orders — click customer name to view their ledger.
           </p>
@@ -127,14 +127,22 @@ export default function AdminOrdersPage() {
         </Card>
       ) : (
         <>
-          <div className="sm:hidden mb-4">
+          <div className="flex items-center gap-3 mb-3 sm:mb-4">
+            <div className="relative flex-1 min-w-[200px]">
+              <SearchInput
+                value={query}
+                onChange={setQuery}
+                placeholder="Search by customer, product, or order #..."
+              />
+            </div>
             <Button
               variant="outline"
-              className="w-full gap-2 min-h-[44px]"
+              size="icon"
+              className="sm:hidden shrink-0 min-h-[44px] min-w-[44px]"
               onClick={() => setShowFilters(!showFilters)}
+              aria-label="Toggle filters"
             >
-              <Filter className="h-4 w-4" /> 
-              {showFilters ? "Hide Filters" : "Show Filters"}
+              <Filter className="h-4 w-4" />
             </Button>
           </div>
 
@@ -142,13 +150,6 @@ export default function AdminOrdersPage() {
             "flex-col sm:flex-row flex-wrap gap-3 mb-4",
             showFilters ? "flex" : "hidden sm:flex"
           )}>
-            <div className="relative flex-1 w-full sm:w-auto min-w-[200px]">
-              <SearchInput
-                value={query}
-                onChange={setQuery}
-                placeholder="Search by customer, product, or order #..."
-              />
-            </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}

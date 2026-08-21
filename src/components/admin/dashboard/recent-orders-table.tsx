@@ -101,26 +101,67 @@ export function RecentOrdersTable({ orders }: { orders: any[] }) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border text-muted-foreground">
-            <th className="text-left py-2 pl-4 font-medium w-12">#</th>
-            <th className="text-left py-2 font-medium">Order</th>
-            <th className="text-left py-2 font-medium">Customer</th>
-            <th className="text-left py-2 font-medium">Product</th>
-            <th className="text-right py-2 font-medium">Amount</th>
-            <th className="text-right py-2 pr-4 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <AnimatePresence initial={false}>
-            {orders.map((order, idx) => (
-              <OrderRow key={order.id} order={order} index={idx} />
-            ))}
-          </AnimatePresence>
-        </tbody>
-      </table>
+    <div>
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-border text-muted-foreground">
+              <th className="text-left py-2 pl-4 font-medium w-12">#</th>
+              <th className="text-left py-2 font-medium">Order</th>
+              <th className="text-left py-2 font-medium">Customer</th>
+              <th className="text-left py-2 font-medium">Product</th>
+              <th className="text-right py-2 font-medium">Amount</th>
+              <th className="text-right py-2 pr-4 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <AnimatePresence initial={false}>
+              {orders.map((order, idx) => (
+                <OrderRow key={order.id} order={order} index={idx} />
+              ))}
+            </AnimatePresence>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden flex flex-col divide-y divide-border">
+        {orders.map((order, idx) => (
+          <div key={order.id} className="flex items-center gap-3 py-3">
+            <span className="text-xs font-mono text-muted-foreground w-6 shrink-0">{idx}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/admin/orders/${order.id}`}
+                  className="font-mono text-xs text-primary hover:underline shrink-0"
+                >
+                  #{order.id.slice(0, 8)}
+                </Link>
+                <Badge
+                  variant={
+                    order.status === "active" || order.status === "completed"
+                      ? "success"
+                      : order.status === "pending"
+                      ? "default"
+                      : "warning"
+                  }
+                  className="shrink-0"
+                >
+                  {order.status}
+                </Badge>
+              </div>
+              <Link
+                href={`/admin/customers/${order.customer_id}`}
+                className="block text-sm font-medium text-foreground hover:text-primary hover:underline truncate mt-0.5"
+              >
+                {order.customer?.full_name || "Customer"}
+              </Link>
+              <p className="text-xs text-muted-foreground truncate">{order.product?.name || "—"}</p>
+            </div>
+            <span className="text-sm font-medium tabular-nums shrink-0">{formatPKR(order.total_amount)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
