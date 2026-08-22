@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     const paidDate = paid_date || new Date().toISOString().split("T")[0];
     const paidAt = new Date(paidDate).toISOString();
-    const refNo = `MANUAL-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const refNo = amount >= remaining ? "Full Installment" : "Partial Payment";
 
     // 3. Record the payment
     const { error: paymentError } = await supabase.from("payments").insert({

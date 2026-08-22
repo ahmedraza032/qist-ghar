@@ -76,6 +76,9 @@ const styles = StyleSheet.create({
 import type { ReceiptData } from "@/types/receipt";
 
 export function ReceiptPDF({ data }: { data: ReceiptData }) {
+  const totalPaid = data.payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const totalOutstanding = Math.max(0, data.totalAmount - totalPaid);
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -150,9 +153,17 @@ export function ReceiptPDF({ data }: { data: ReceiptData }) {
           <Text style={styles.label}>Tenure</Text>
           <Text style={styles.value}>{data.durationMonths} months</Text>
         </View>
-        <View style={[styles.row, styles.total]}>
+        <View style={styles.row}>
           <Text style={styles.totalText}>Total Cost</Text>
           <Text style={styles.totalText}>{formatPKR(data.totalAmount)}</Text>
+        </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>Total Paid</Text>
+          <Text style={[styles.value, styles.paid]}>{formatPKR(totalPaid)}</Text>
+        </View>
+        <View style={[styles.row, styles.total]}>
+          <Text style={styles.totalText}>Total Outstanding</Text>
+          <Text style={styles.totalText}>{formatPKR(totalOutstanding)}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Payment History</Text>

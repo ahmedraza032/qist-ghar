@@ -51,6 +51,9 @@ export default async function AdminOrderDetailPage({
   const instList = installments || [];
   const payList = payments || [];
 
+  const totalPaid = payList.reduce((s: number, p: any) => s + (p.amount || 0), 0);
+  const orderOutstanding = Math.max(0, (o.total_amount || 0) - totalPaid);
+
   const paidByInstallment = new Map<string, number>();
   (payList || []).forEach((p: any) => {
     if (p.installment_id) {
@@ -190,6 +193,14 @@ export default async function AdminOrderDetailPage({
                   <span>Total</span>
                   <span className="text-primary">{formatPKR(o.total_amount)}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Paid</span>
+                  <span className="font-medium text-emerald-600">{formatPKR(totalPaid)}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Total Outstanding</span>
+                  <span className="text-amount">{formatPKR(orderOutstanding)}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -293,6 +304,26 @@ export default async function AdminOrderDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          {/* Payment History */}
+          {payList.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Payment History</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {payList.map((pmt: any) => (
+                  <div key={pmt.id} className="flex justify-between border-b border-border pb-2 last:border-0">
+                    <div>
+                      <p className="text-xs text-muted-foreground">{formatDate(pmt.paid_at)}</p>
+                      <p className="font-mono text-xs">{formatReference(pmt.reference_no)}</p>
+                    </div>
+                    <span className="font-medium">{formatPKR(pmt.amount)}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -380,25 +411,6 @@ export default async function AdminOrderDetailPage({
             </CardContent>
           </Card>
 
-          {/* Payment History */}
-          {payList.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Payment History</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {payList.map((pmt: any) => (
-                  <div key={pmt.id} className="flex justify-between border-b border-border pb-2 last:border-0">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{formatDate(pmt.paid_at)}</p>
-                      <p className="font-mono text-xs">{formatReference(pmt.reference_no)}</p>
-                    </div>
-                    <span className="font-medium">{formatPKR(pmt.amount)}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>

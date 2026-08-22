@@ -135,7 +135,7 @@ export function RecordPaymentButton({
               </div>
               <div className="space-y-2 flex flex-col">
                 <Label>Payment Date</Label>
-                <Input type="date" value={paidDate} onChange={(e) => setPaidDate(e.target.value)} className="min-h-[44px] text-[16px]" />
+                <Input type="date" value={paidDate} max={new Date().toISOString().split("T")[0]} onChange={(e) => setPaidDate(e.target.value)} className="min-h-[44px] text-[16px]" />
               </div>
             </div>
 

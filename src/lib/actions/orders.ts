@@ -133,7 +133,7 @@ export async function createOrder(input: CreateOrderInput): Promise<CreateOrderR
       order_id: order.id,
       amount: input.downPaymentAmount,
       method: input.paymentMethod,
-      reference_no: `DP-${order.id.slice(0, 8)}`,
+      reference_no: "Down Payment",
       paid_at: new Date().toISOString(),
     });
   }
